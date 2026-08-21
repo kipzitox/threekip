@@ -1,0 +1,48 @@
+/* ── Narrow float card handle — pill fills left, buttons top-right ── */
+.fc-hdr{display:flex;align-items:center;
+  padding:4px 6px 3px;border-bottom:1px solid var(--bdr);cursor:grab;flex-shrink:0;
+  background:rgba(var(--ink-rgb),.03)}
+.fc-hdr:active{cursor:grabbing}
+.fc-hdr-pill{flex:1;display:flex;align-items:center;justify-content:center}
+.fc-hdr-pill::before{content:'';display:block;width:28px;height:3px;border-radius:2px;background:var(--bdr)}
+.fc-hdr-btns{display:flex;gap:3px;flex-shrink:0}
+.fc-hdr-btn{width:18px;height:18px;border-radius:4px;border:1px solid var(--bdr);
+  background:transparent;color:var(--mut);font-size:8px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;letter-spacing:0;font-family:'DM Mono',monospace}
+.fc-hdr-btn:active{background:rgba(var(--ink-rgb),.15)}
+.fc-hdr-btn.lit{border-color:var(--ink);opacity:.7}
+
+#toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(6px);
+  background:rgba(var(--ink-rgb),.85);color:#e8dcc8;font-size:8px;letter-spacing:.06em;
+  padding:5px 12px;border-radius:20px;z-index:500;pointer-events:none;opacity:0;
+  transition:opacity .15s,transform .15s;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+
+
+/* ── NEW SCENE MODAL ── */
+#new-scene-modal{position:fixed;inset:0;z-index:600;display:none;align-items:center;justify-content:center;background:rgba(var(--ink-rgb),.35);backdrop-filter:blur(3px)}
+#new-scene-modal.vis{display:flex}
+.nsm-box{background:var(--pan);border:1px solid var(--bdr);border-radius:12px;padding:16px 18px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:10px;min-width:200px;max-width:260px}
+.nsm-title{font-size:9px;letter-spacing:.08em;color:var(--ink);text-align:center;opacity:.75}
+.nsm-btns{display:flex;flex-direction:column;gap:5px}
+.nsm-btn{height:30px;border-radius:7px;border:1px solid var(--bdr);background:transparent;color:var(--ink);font-family:'DM Mono',monospace;font-size:8px;cursor:pointer;transition:all .1s;letter-spacing:.04em}
+.nsm-btn:hover,.nsm-btn.hover{background:rgba(var(--ink-rgb),.08)}
+.nsm-btn.primary{background:rgba(var(--ink-rgb),.1);font-weight:500}
+.nsm-btn.cancel{color:var(--mut)}
+#save-name-modal{position:fixed;inset:0;z-index:601;display:none;align-items:center;justify-content:center;background:rgba(var(--ink-rgb),.35);backdrop-filter:blur(3px)}
+#save-name-modal.vis{display:flex}
+#export-name-modal{position:fixed;inset:0;z-index:602;display:none;align-items:center;justify-content:center;background:rgba(var(--ink-rgb),.35);backdrop-filter:blur(3px)}
+#export-name-modal.vis{display:flex}
+.enm-ext{font-size:8px;color:var(--mut);letter-spacing:.04em;margin-left:4px}
+/* Recording stop button */
+#rec-stop-btn{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:700;
+  display:none;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;border:1px solid rgba(176,48,32,.5);
+  background:rgba(var(--ink-rgb),.85);backdrop-filter:blur(12px);color:#fff;font-family:'DM Mono',monospace;
+  font-size:8px;letter-spacing:.06em;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#rec-stop-btn.vis{display:flex}
+#rec-stop-btn .rec-dot{width:8px;height:8px;border-radius:50%;background:#e03040;animation:rec-blink 1s ease-in-out infinite}
+@keyframes rec-blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+body.selecting{cursor:crosshair!important}body.selecting *{cursor:crosshair!important}

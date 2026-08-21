@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "ThreeKip",
+    "slug": "sketchbook-mobile",
+    "version": "1.0.0",
+    "orientation": "default",
+    "scheme": "sketchbook",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/icons/icon.png",
+    "splash": {
+      "image": "./assets/engine/icon-512.png",
+      "backgroundColor": "#cdb899",
+      "resizeMode": "contain"
+    },
+    "androidStatusBar": {
+      "backgroundColor": "#cdb899",
+      "translucent": false
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sketchbook.mobile"
+    },
+    "android": {
+      "package": "com.sketchbook.mobile",
+      "navigationBar": {
+        "backgroundColor": "#cdb899",
+        "visible": true
+      },
+      "softwareKeyboardLayoutMode": "pan",
+      "permissions": [],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/adaptive-foreground.png",
+        "backgroundColor": "#cdb899"
+      }
+    },
+    "plugins": ["expo-router", "./plugins/withEngineAssets.js"]
+  }
+}
