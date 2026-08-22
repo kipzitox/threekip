@@ -1,0 +1,8 @@
+{
+  "name": "ThreeKip 3D Sketchbook",
+  "description": "Professional 3D CAD sketching and modeling application with Material Design 3 and Three.js engine",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

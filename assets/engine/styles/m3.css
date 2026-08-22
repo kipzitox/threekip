@@ -45,7 +45,7 @@
 .lbtn.active,.tb-lrow.active{background:var(--md-secondary-container);color:var(--md-on-secondary-container);border-color:transparent}
 
 /* Dialogs — M3 dialog shape (extra-large) + scrim */
-#new-scene-modal,#save-name-modal,#export-name-modal{background:var(--md-scrim)}
+#new-scene-modal,#save-name-modal,#export-name-modal,#restore-modal{background:var(--md-scrim)}
 .nsm-box{border-radius:var(--shp-xl);box-shadow:var(--elev-3);border:none;background:var(--md-surface)}
 
 /* Float card + strips — rounded sheets */

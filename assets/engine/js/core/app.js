@@ -39,14 +39,29 @@ class _App {
   }
 
   _restore() {
+    function handleSavedData(saved) {
+      if (saved) {
+        try {
+          var data = JSON.parse(saved);
+          var hasContent = (data.strokes && data.strokes.length > 0) || (data.pages && data.pages.some(function(pg){ return pg.strokes && pg.strokes.length > 0; }));
+          if (hasContent) {
+            window._pendingRestoreData = data;
+            var rmod = document.getElementById('restore-modal');
+            if (rmod) {
+              rmod.classList.add('vis');
+            } else {
+              setTimeout(function(){
+                var r2 = document.getElementById('restore-modal');
+                if (r2) r2.classList.add('vis');
+              }, 300);
+            }
+          }
+        } catch (e) {}
+      }
+    }
     function doRestore() {
       idbLoad(function (saved) {
-        if (saved) {
-          try {
-            var data = JSON.parse(saved);
-            if (data.strokes && data.strokes.length > 0) loadAllPages(data);
-          } catch (e) {}
-        }
+        handleSavedData(saved);
       });
     }
     if (_idb) {
@@ -54,13 +69,10 @@ class _App {
     } else {
       _onIdbReady(function () { doRestore(); });
       setTimeout(function () {
-        if (!_idb) {
+        if (!_idb && !window._pendingRestoreData) {
           try {
             var s = localStorage.getItem('sk3d_auto');
-            if (s) {
-              var d = JSON.parse(s);
-              if (d.strokes && d.strokes.length > 0) loadAllPages(d);
-            }
+            if (s) handleSavedData(s);
           } catch (e) {}
         }
       }, 2000);

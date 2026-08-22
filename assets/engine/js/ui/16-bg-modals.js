@@ -169,6 +169,48 @@ function newScene(){
     if(e.key==='Escape'){cancel();}
   });
 })();
+
+// ── Restore Last Session Modal Handler ──
+(function(){
+  var rmod = document.getElementById('restore-modal');
+  if(!rmod) return;
+  function hideRmod(){ rmod.classList.remove('vis'); }
+  
+  document.getElementById('rsm-restore').addEventListener('click', function(){
+    hideRmod();
+    if(window._pendingRestoreData){
+      try {
+        loadAllPages(window._pendingRestoreData);
+        if(typeof toast === 'function') toast('Session restored');
+      } catch(e) {}
+      window._pendingRestoreData = null;
+    }
+  });
+
+  document.getElementById('rsm-fresh').addEventListener('click', function(){
+    hideRmod();
+    window._pendingRestoreData = null;
+    try {
+      if(typeof idbSave === 'function' && typeof sceneData === 'function') {
+        idbSave(JSON.stringify(sceneData()));
+      }
+      localStorage.removeItem('sk3d_auto');
+    } catch(e){}
+    if(typeof toast === 'function') toast('Started fresh session');
+  });
+
+  document.getElementById('rsm-cancel').addEventListener('click', function(){
+    hideRmod();
+    window._pendingRestoreData = null;
+  });
+
+  rmod.addEventListener('click', function(e){
+    if(e.target === rmod){
+      hideRmod();
+      window._pendingRestoreData = null;
+    }
+  });
+})();
 document.getElementById('bsave').addEventListener('click',saveFile);
 document.getElementById('bload').addEventListener('click',loadFile);
 document.getElementById('bexp').addEventListener('click',function(e){

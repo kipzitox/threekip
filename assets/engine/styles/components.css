@@ -35,6 +35,8 @@
 #save-name-modal.vis{display:flex}
 #export-name-modal{position:fixed;inset:0;z-index:602;display:none;align-items:center;justify-content:center;background:rgba(var(--ink-rgb),.35);backdrop-filter:blur(3px)}
 #export-name-modal.vis{display:flex}
+#restore-modal{position:fixed;inset:0;z-index:603;display:none;align-items:center;justify-content:center;background:rgba(var(--ink-rgb),.35);backdrop-filter:blur(3px)}
+#restore-modal.vis{display:flex}
 .enm-ext{font-size:8px;color:var(--mut);letter-spacing:.04em;margin-left:4px}
 /* Recording stop button */
 #rec-stop-btn{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:700;
