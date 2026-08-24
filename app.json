@@ -7,7 +7,7 @@
     "scheme": "sketchbook",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "icon": "./assets/icons/icon.png",
+    "icon": "./assets/engine/icon-512.png",
     "splash": {
       "image": "./assets/engine/icon-512.png",
       "backgroundColor": "#cdb899",
@@ -30,7 +30,7 @@
       "softwareKeyboardLayoutMode": "pan",
       "permissions": [],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icons/adaptive-foreground.png",
+        "foregroundImage": "./assets/engine/icon-512.png",
         "backgroundColor": "#cdb899"
       }
     },
