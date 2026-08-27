@@ -4,22 +4,23 @@ import path from "path";
 const app = express();
 const PORT = 3000;
 
-const ROOT = process.cwd();
-const enginePath = path.join(ROOT, "assets", "engine");
-const webPath = path.join(ROOT, "web");
+// Serve the Expo React Native Web export at root
+app.use(express.static(path.join(process.cwd(), "dist-web")));
 
-// Engine 3D served under /engine so its relative asset paths (js/, assets/, sw.js) resolve.
+// Serve static engine files from assets/engine at /engine
+const enginePath = path.join(process.cwd(), "assets", "engine");
 app.use("/engine", express.static(enginePath));
-// Static assets for the web shell (css/js).
-app.use("/web", express.static(webPath));
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", app: "threekip-web" });
+// Fallback for React Router in Expo Web
+app.get("*", (req, res) => {
+  if (req.url.startsWith("/engine/") || req.url.startsWith("/api/")) {
+    return;
+  }
+  res.sendFile(path.join(process.cwd(), "dist-web", "index.html"));
 });
 
-// Desktop (Library) shell at the root.
-app.get("/", (_req, res) => {
-  res.sendFile(path.join(webPath, "desktop.html"));
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", app: "threekip-web" });
 });
 
 app.listen(PORT, "0.0.0.0", () => {

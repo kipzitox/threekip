@@ -6,6 +6,4 @@
 // WebView must reach it via your machine's LAN IP, e.g.:
 //   EXPO_PUBLIC_WEB_URL=http://192.168.1.20:8765/index.html
 // The default assumes the dev server runs on localhost:8765 (web preview / emulator).
-export const WEB_APP_URL =
-  (process.env.EXPO_PUBLIC_WEB_URL as string | undefined) ??
-  'http://localhost:8765/index.html';
+export const WEB_APP_URL = '/engine/index.html';

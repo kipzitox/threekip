@@ -58,7 +58,7 @@ interface ProjectState {
   toggleFavorite: (id: string) => Promise<void>;
   rename: (id: string, name: string) => Promise<void>;
   duplicate: (id: string) => Promise<ProjectMeta | null>;
-  importProject: (uri: string, name?: string) => Promise<ProjectMeta | null>;
+  importProject: (uri: string, name?: string, rawJson?: string) => Promise<ProjectMeta | null>;
   setPendingLoad: (id: string | null) => void;
   setCurrent: (id: string | null) => void;
 }
@@ -196,8 +196,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     return meta;
   },
 
-  importProject: async (uri, name) => {
-    const meta = await importProjectFile(uri, name);
+  importProject: async (uri, name, rawJson) => {
+    const meta = await importProjectFile(uri, name, rawJson);
     set((s) => ({ projects: [meta, ...s.projects] }));
     return meta;
   },

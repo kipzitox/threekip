@@ -2,9 +2,11 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   StatusBar,
   StyleSheet,
+  Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
+import { AppWebView, AppWebViewHandle } from './components/AppWebView';
 import { useSketchbookBridge } from './services/sketchbookBridge';
 import { INJECTED_JAVASCRIPT } from './services/webViewBridge';
 import { getEngineSource } from './services/engineLoader';
@@ -12,9 +14,12 @@ import { EditorUI } from './ui/EditorUI';
 import { useProjectStore, NEW_PROJECT_SENTINEL } from './stores/ProjectStore';
 import { readProjectFile } from './services/projectStorage';
 import { useSettingsStore } from './stores/SettingsStore';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import { Alert } from 'react-native';
+import { translations } from './i18n';
+
+function getI18n() {
+  const lang = useSettingsStore.getState().language;
+  return translations[lang] || translations.es;
+}
 
 // Loads the in-page transport (js/rn-transport.js) from the same origin as the
 // engine page, so the Bridge protocol is available once the app boots.
@@ -39,7 +44,7 @@ const LOAD_RN_TRANSPORT = `
 const SKIN_CSS = `
 /* ── ThreeKip Material Design 3 — complete token set for engine UI ──
    Defines every CSS variable the engine's m3.css / base.css expect,
-   using our indigo brand (#7C5CFF) as primary. Light & dark modes. */
+   using our M3 purple brand (#6750A4) as primary. Light & dark modes. */
 :root{
   /* Shape tokens (MD3) */
   --shp-xs:4px;
@@ -50,57 +55,57 @@ const SKIN_CSS = `
   --shp-full:999px;
 
   /* Elevation shadows (MD3) */
-  --elev-1:0 1px 2px rgba(0,0,0,.05),0 1px 3px rgba(0,0,0,.05);
-  --elev-2:0 2px 4px rgba(0,0,0,.06),0 4px 8px rgba(0,0,0,.06);
-  --elev-3:0 4px 8px rgba(0,0,0,.08),0 8px 16px rgba(0,0,0,.08);
-  --elev-4:0 6px 12px rgba(0,0,0,.10),0 12px 24px rgba(0,0,0,.10);
-  --elev-5:0 8px 16px rgba(0,0,0,.12),0 16px 32px rgba(0,0,0,.12);
+  --elev-1:0 1px 2px rgba(29,27,32,.14),0 1px 3px 1px rgba(29,27,32,.12);
+  --elev-2:0 1px 2px rgba(29,27,32,.12),0 2px 6px 2px rgba(29,27,32,.10);
+  --elev-3:0 1px 3px rgba(29,27,32,.15),0 4px 8px 3px rgba(29,27,32,.10);
+  --elev-4:0 6px 12px rgba(29,27,32,.14),0 12px 24px rgba(29,27,32,.10);
+  --elev-5:0 8px 16px rgba(29,27,32,.16),0 16px 32px rgba(29,27,32,.12);
 
   /* Motion */
   --tr:all .15s cubic-bezier(.2,.0,.38,.9);
 
   /* MD3 Color tokens — LIGHT (default) */
-  --md-primary:#7C5CFF;
+  --md-primary:#6750A4;
   --md-on-primary:#FFFFFF;
-  --md-primary-container:#ECE7FF;
-  --md-on-primary-container:#1D134D;
+  --md-primary-container:#EADDFF;
+  --md-on-primary-container:#21005D;
 
-  --md-secondary:#6E63FF;
+  --md-secondary:#625B71;
   --md-on-secondary:#FFFFFF;
-  --md-secondary-container:#E6E3FF;
-  --md-on-secondary-container:#1A1245;
+  --md-secondary-container:#E8DEF8;
+  --md-on-secondary-container:#1D192B;
 
-  --md-tertiary:#A05C7E;
+  --md-tertiary:#7D5260;
   --md-on-tertiary:#FFFFFF;
   --md-tertiary-container:#FFD8E4;
-  --md-on-tertiary-container:#3D0F20;
+  --md-on-tertiary-container:#31111D;
 
   --md-error:#B3261E;
   --md-on-error:#FFFFFF;
   --md-error-container:#F9DEDC;
   --md-on-error-container:#410E0B;
 
-  --md-background:#FEFBFF;
-  --md-on-background:#1C1B1F;
-  --md-surface:#FFFFFF;
-  --md-on-surface:#1C1B1F;
+  --md-background:#FEF7FF;
+  --md-on-background:#1D1B20;
+  --md-surface:#FEF7FF;
+  --md-on-surface:#1D1B20;
   --md-surface-variant:#E7E0EC;
   --md-on-surface-variant:#49454F;
   --md-outline:#79747E;
   --md-outline-variant:#CAC4D0;
   --md-shadow:#000000;
-  --md-scrim:#000000;
-  --md-inverse-surface:#313033;
-  --md-inverse-on-surface:#F4EFF4;
+  --md-scrim:rgba(0,0,0,.4);
+  --md-inverse-surface:#322F35;
+  --md-inverse-on-surface:#F5EFF7;
   --md-inverse-primary:#D0BCFF;
 
   /* Engine legacy aliases (used by base.css, components.css, etc.) */
   --bg:var(--md-background);
   --ink:var(--md-on-background);
   --mut:var(--md-on-surface-variant);
-  --pan:var(--md-surface);
+  --pan:rgba(254,247,255,.94);
   --bdr:var(--md-outline-variant);
-  --ink-rgb:28,27,31;
+  --ink-rgb:29,27,32;
   --tr:all .15s ease;
 }
 
@@ -126,37 +131,37 @@ const SKIN_CSS = `
   --md-error-container:#8C1D18;
   --md-on-error-container:#F9DEDC;
 
-  --md-background:#1C1B1F;
-  --md-on-background:#E6E1E5;
-  --md-surface:#1C1B1F;
-  --md-on-surface:#E6E1E5;
+  --md-background:#141218;
+  --md-on-background:#E6E0E9;
+  --md-surface:#141218;
+  --md-on-surface:#E6E0E9;
   --md-surface-variant:#49454F;
   --md-on-surface-variant:#CAC4D0;
   --md-outline:#938F99;
   --md-outline-variant:#49454F;
   --md-shadow:#000000;
-  --md-scrim:#000000;
-  --md-inverse-surface:#E6E1E5;
-  --md-inverse-on-surface:#313033;
-  --md-inverse-primary:#7C5CFF;
+  --md-scrim:rgba(0,0,0,.5);
+  --md-inverse-surface:#E6E0E9;
+  --md-inverse-on-surface:#322F35;
+  --md-inverse-primary:#6750A4;
 
   /* Engine legacy aliases (dark) */
   --bg:var(--md-background);
   --ink:var(--md-on-background);
   --mut:var(--md-on-surface-variant);
-  --pan:var(--md-surface);
+  --pan:rgba(20,18,24,.94);
   --bdr:var(--md-outline-variant);
-  --ink-rgb:230,225,229;
+  --ink-rgb:230,224,233;
   --tr:all .15s ease;
 }
 
-/* Global font — MD3 type scale uses Roboto/Inter */
+/* Global font — DM Mono for authentic technical aesthetic */
 body,button,input,select,textarea,
 .btn,.btn-sm,.btn-md,.btn-pill,.btn-sft,.cyc-btn,.cw,
 #sbar,.nsm-btn,.emb,#stxt,.card,.sc-group,.panel,.pop,.brush-pop,.tsep,.nsm-lbl,
 .nsm-title,.nsm-box,.fc-hdr,.fc-hdr-pill,.pg-thumb,.vw-thumb,
 .cyc-pop-item,.sc-title,.nsm-lbl,.bprev-btn{
-  font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif !important;
+  font-family:'DM Mono',monospace,-apple-system,sans-serif !important;
 }
 
 /* Canvas background */
@@ -295,6 +300,22 @@ body,button,input,select,textarea,
 .tb-lrow{background:var(--md-surface) !important;border-radius:var(--shp-sm) !important;}
 .tb-lrow.active{background:var(--md-secondary-container) !important;color:var(--md-on-secondary-container) !important;}
 
+/* Ensure sidecol is always displayed across all screen sizes and aspect ratios, positioned below the RN top bar */
+#sidecol{
+  display:flex !important;
+  top:72px !important;
+  bottom:56px !important;
+  z-index:200 !important;
+}
+#sidecol.collapsed{
+  opacity:0 !important;
+  pointer-events:none !important;
+  transform:translateX(-12px) !important;
+}
+body.rside #sidecol.collapsed{
+  transform:translateX(12px) !important;
+}
+
 /* Hide the engine's original top bars (both regular and narrow) completely.
    Use multiple properties as fallback in case display:none is overridden. */
 #topbar,#narrow-bar{
@@ -319,6 +340,55 @@ body,button,input,select,textarea,
   right:12px !important;
   left:auto !important;
   z-index:9999 !important;
+}
+
+/* ── Tablet Adaptations (>= 768px) ── */
+@media (min-width: 768px) {
+  #sidecol {
+    width: 216px !important;
+    top: 76px !important;
+    bottom: 36px !important;
+    gap: 8px !important;
+  }
+  #gc {
+    width: 184px !important;
+    height: 154px !important;
+  }
+  .sc-group {
+    border-radius: 14px !important;
+  }
+  .cw, #ccpick {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+  }
+  .cyc-btn {
+    height: 32px !important;
+    font-size: 8px !important;
+  }
+  .btn, .btn-sm, .btn-md {
+    font-size: 9px !important;
+  }
+  #sbar {
+    bottom: 14px !important;
+    padding: 6px 18px !important;
+    font-size: 9.5px !important;
+    border-radius: var(--shp-full) !important;
+  }
+  #stab {
+    width: 20px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+  }
+  #stab span {
+    width: 4px !important;
+    height: 20px !important;
+  }
+  #expmenu, #layers-pop, #bgpop, #bdepth-op, #rec-stop-btn {
+    top: 76px !important;
+    right: 16px !important;
+    border-radius: 16px !important;
+  }
 }
 `;
 
@@ -349,7 +419,11 @@ const HIDE_UI_JS = `
   function whiteBg() {
     try {
       var ci = document.getElementById('bgpop-custom');
-      if (ci) { ci.value = '#ffffff'; ci.dispatchEvent(new Event('input', { bubbles: true })); }
+      if (ci && !ci.__tkInit) {
+        ci.__tkInit = true;
+        ci.value = '#FEF7FF';
+        ci.dispatchEvent(new Event('input', { bubbles: true }));
+      }
     } catch (e) {}
   }
   function on(sel) {
@@ -358,12 +432,19 @@ const HIDE_UI_JS = `
   function reportState() {
     try {
       var st = {
-        grid: on('#bgrid'), axis: on('#baxis'), persp: on('#bpersp'),
-        surf: on('#bsurf'), depth: on('#bdepth'), surfgrid: on('#bsurfgrid'),
-        pan: on('#bpan'), orbit: on('#borbit'), stylus: on('#bstylus'), gestswap: on('#bgestswap'),
-        lcl: on('#lcl-float'),
+        grid: on('#bgrid') || on('#pb-grid'),
+        axis: on('#baxis') || on('#pb-axis'),
+        persp: on('#bpersp') || on('#pb-nav-persp') || on('#nav-persp'),
+        surf: on('#bsurf') || on('#pb-surf'),
+        depth: on('#bdepth') || on('#pb-depth'),
+        surfgrid: on('#bsurfgrid') || on('#pb-surfgrid'),
+        pan: on('#bpan'),
+        orbit: on('#borbit'),
+        stylus: on('#bstylus') || on('#pb-stylus'),
+        gestswap: on('#bgestswap') || on('#pb-gestswap'),
+        lcl: on('#lcl-float') || on('#glocal') || on('#pb-glocal'),
       };
-      if (window.ReactNativeWebView) {
+      if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
         window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'evt', event: 'tkState', data: st }));
       }
     } catch (e) {}
@@ -394,6 +475,9 @@ const HIDE_UI_JS = `
         })(HIDE_IDS[i]);
       }
       setInterval(enforceHide, 1500);
+      document.addEventListener('click', function () {
+        setTimeout(reportState, 60);
+      });
     } catch (e) {}
   }
   function patchDownload() {
@@ -462,29 +546,52 @@ const INJECTED = `${INJECTED_JAVASCRIPT}\n;${LOAD_RN_TRANSPORT}\n;${HIDE_UI_JS}`
 // not save inside a WebView) and writes it to a file, then opens the system
 // share sheet so the user can save it to the device gallery / storage.
 async function savePngExport(base64: string): Promise<void> {
+  const tr = getI18n();
   const safe = (base64 || '').replace(/\s/g, '');
   if (!safe) {
-    Alert.alert('Error', 'No se pudo generar la imagen PNG.');
+    Alert.alert(tr.common.error, tr.editor.pngError);
     return;
   }
   try {
     const name = `sketch3d_${Date.now()}.png`;
-    const uri = `${FileSystem.cacheDirectory}${name}`;
-    await FileSystem.writeAsStringAsync(uri, safe, {
-      encoding: FileSystem.EncodingType.Base64,
+    if (Platform.OS === 'web') {
+      const byteCharacters = atob(safe.replace(/^data:[^;]+;base64,/, ''));
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/png' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const NativeFS = require('expo-file-system');
+    const NativeSharing = require('expo-sharing');
+    const uri = `${NativeFS.cacheDirectory || NativeFS.documentDirectory || ''}${name}`;
+    await NativeFS.writeAsStringAsync(uri, safe, {
+      encoding: NativeFS.EncodingType.Base64,
     });
-    if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(uri, {
+    if (NativeSharing && (await NativeSharing.isAvailableAsync())) {
+      await NativeSharing.shareAsync(uri, {
         mimeType: 'image/png',
-        dialogTitle: 'Guardar PNG del proyecto',
+        dialogTitle: tr.editor.pngShareTitle,
         UTI: 'public.png',
       });
     } else {
-      Alert.alert('PNG listo', `Guardado en:\n${uri}`);
+      Alert.alert(tr.editor.pngReady, `${tr.editor.savedIn}\n${uri}`);
     }
   } catch (e) {
     console.error('[Editor] png export failed', e);
-    Alert.alert('Error', 'No se pudo guardar el PNG.');
+    Alert.alert(tr.common.error, tr.editor.pngError);
   }
 }
 
@@ -492,9 +599,10 @@ async function savePngExport(base64: string): Promise<void> {
 // download, which does not save inside a WebView) and writes it to a file,
 // then opens the system share sheet so the user can save it to the device.
 async function saveFileExport(name: string, b64: string): Promise<void> {
+  const tr = getI18n();
   const safe = (b64 || '').replace(/\s/g, '');
   if (!safe) {
-    Alert.alert('Error', 'No se pudo exportar el archivo.');
+    Alert.alert(tr.common.error, tr.editor.fileExportError);
     return;
   }
   const fname = name || `export_${Date.now()}`;
@@ -509,33 +617,52 @@ async function saveFileExport(name: string, b64: string): Promise<void> {
   };
   const mime = mimeByExt[ext] || 'application/octet-stream';
   try {
-    const uri = `${FileSystem.cacheDirectory}${fname}`;
-    await FileSystem.writeAsStringAsync(uri, safe, {
-      encoding: FileSystem.EncodingType.Base64,
+    if (Platform.OS === 'web') {
+      const byteCharacters = atob(safe.replace(/^data:[^;]+;base64,/, ''));
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fname;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const NativeFS = require('expo-file-system');
+    const NativeSharing = require('expo-sharing');
+    const uri = `${NativeFS.cacheDirectory || NativeFS.documentDirectory || ''}${fname}`;
+    await NativeFS.writeAsStringAsync(uri, safe, {
+      encoding: NativeFS.EncodingType.Base64,
     });
-    if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(uri, { mimeType: mime, dialogTitle: 'Guardar archivo' });
+    if (NativeSharing && (await NativeSharing.isAvailableAsync())) {
+      await NativeSharing.shareAsync(uri, { mimeType: mime, dialogTitle: tr.editor.fileShareTitle });
     } else {
-      Alert.alert('Exportado', `Guardado en:\n${uri}`);
+      Alert.alert(tr.editor.fileReady, `${tr.editor.savedIn}\n${uri}`);
     }
   } catch (e) {
     console.error('[Editor] file export failed', e);
-    Alert.alert('Error', 'No se pudo guardar el archivo.');
+    Alert.alert(tr.common.error, tr.editor.fileExportError);
   }
 }
 
 export default function Editor() {
-  const webRef = useRef<WebView>(null);
+  const webRef = useRef<AppWebViewHandle>(null);
   const bridge = useSketchbookBridge(webRef);
   const [ready, setReady] = useState(false);
 
-  // Re-apply the pure-white background whenever the scene is (re)loaded — the
-  // engine resets it to beige on a fresh scene, so we drive the custom color
-  // input (#bgpop-custom) to #ffffff after load. This is pure white, not the
-  // engine's "white" preset (#f5f0e8, which is cream/beige).
+  // Re-apply the light background whenever the scene is (re)loaded
   const reapplyLightBg = useCallback(() => {
     webRef.current?.injectJavaScript(
-      "try{var ci=document.getElementById('bgpop-custom');if(ci){ci.value='#ffffff';ci.dispatchEvent(new Event('input',{bubbles:true}));}}catch(e){}"
+      "try{var ci=document.getElementById('bgpop-custom');if(ci){ci.value='#FEF7FF';ci.dispatchEvent(new Event('input',{bubbles:true}));}}catch(e){}"
     );
     if (useSettingsStore.getState().resetCamOnOpen) {
       bridge.send('setCamera', { theta: 0.6, phi: 1.0, radius: 14 }).catch(() => {});
@@ -581,7 +708,12 @@ export default function Editor() {
       loadPending();
       reapplyLightBg();
     }
+    const fallbackTimer = setTimeout(() => {
+      setReady(true);
+    }, 500);
+
     return () => {
+      clearTimeout(fallbackTimer);
       offReady();
       offLoaded();
       offPng();
@@ -592,7 +724,7 @@ export default function Editor() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar />
-      <WebView
+      <AppWebView
         ref={webRef}
         style={styles.webview}
         source={getEngineSource()}
@@ -614,6 +746,6 @@ export default function Editor() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
+  container: { flex: 1, backgroundColor: '#FEF7FF' },
   webview: { ...StyleSheet.absoluteFillObject },
 });

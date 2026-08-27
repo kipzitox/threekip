@@ -75,6 +75,13 @@ function finStroke(){
     g.add(buildCap(pts[pts.length-1],curColor,brushSz,brushOp));
   }
   const s={pts,vels,color:curColor,sz:brushSz,op:brushOp,flat:flatBrush,layer:activeLayer,mesh:g,_depthKey:''};
+  // Set renderOrder based on layer position in layerOrder (defined in layer-manager.js)
+  if (typeof layerOrder !== 'undefined') {
+    var orderIdx = layerOrder.indexOf(activeLayer);
+    g.renderOrder = orderIdx + 3;
+  } else {
+    g.renderOrder = 3;
+  }
   g.matrixAutoUpdate=false;g.updateMatrix();
   scene.add(g);strokes.push(s);
   if (window.SketchbookEventBus) window.SketchbookEventBus.emit('strokeAdded', { index: strokes.length - 1, count: strokes.length });

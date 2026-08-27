@@ -1,10 +1,10 @@
 {
   "name": "threekip-mobile-web",
   "version": "1.0.0",
-  "main": "server.ts",
+  "main": "expo-router/entry",
   "scripts": {
-    "dev": "tsx server.ts",
-    "build": "esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "dev": "node server.ts",
+    "build": "npx expo export -p web --output-dir dist-web && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
@@ -15,6 +15,7 @@
     "bundle-engine": "node scripts/bundle-engine.mjs"
   },
   "dependencies": {
+    "@expo/metro-runtime": "^57.0.14",
     "@react-navigation/native": "^7.0.0",
     "@react-navigation/stack": "^7.0.0",
     "expo": "~52.0.0",
@@ -27,12 +28,14 @@
     "express": "^4.19.2",
     "lucide-react-native": "^1.31.0",
     "react": "18.3.1",
+    "react-dom": "18.3.1",
     "react-native": "0.76.3",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-reanimated": "~3.16.1",
     "react-native-safe-area-context": "4.12.0",
     "react-native-screens": "~4.4.0",
     "react-native-svg": "^15.8.0",
+    "react-native-web": "^0.21.2",
     "react-native-webview": "13.12.5",
     "zustand": "^5.0.2"
   },

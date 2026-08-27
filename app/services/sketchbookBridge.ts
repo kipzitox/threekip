@@ -1,5 +1,4 @@
 import React from 'react';
-import type { WebView } from 'react-native-webview';
 import type {
   CommandName,
   CommandMessage,
@@ -8,6 +7,11 @@ import type {
   ResponseMessage,
   InboundMessage,
 } from './bridge-types';
+
+export type WebViewHandleLike = {
+  postMessage?: (msg: string) => void;
+  injectJavaScript?: (script: string) => void;
+};
 
 // In-app Bridge client. Mirrors the protocol implemented by js/rn-transport.js
 // (loaded inside the WebView). RN UI components talk ONLY to the engine through
@@ -23,7 +27,7 @@ import type {
 type EventListener = (data: unknown) => void;
 
 export class SketchbookBridge {
-  private handle: WebView | null = null;
+  private handle: WebViewHandleLike | null = null;
   private pending = new Map<
     string,
     { resolve: (v: unknown) => void; reject: (e: Error) => void }
@@ -32,7 +36,7 @@ export class SketchbookBridge {
   private seq = 0;
   private _ready = false;
 
-  attach(handle: WebView | null): void {
+  attach(handle: WebViewHandleLike | null): void {
     this.handle = handle;
   }
   detach(): void {
@@ -108,7 +112,7 @@ export class SketchbookBridge {
 }
 
 export function useSketchbookBridge(
-  webRef: React.RefObject<WebView>
+  webRef: React.RefObject<WebViewHandleLike | any>
 ): SketchbookBridge {
   const bridgeRef = React.useRef<SketchbookBridge>();
   if (!bridgeRef.current) bridgeRef.current = new SketchbookBridge();

@@ -1,39 +1,97 @@
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { ScreenContainer } from './components/ScreenContainer';
+import { Icon } from './ui/primitives';
 import { useTheme } from './theme/ThemeProvider';
-import { spacing, typography } from './theme';
+import { useI18n } from './i18n';
+import { radius, spacing, typography } from './theme';
 
 export default function About() {
   const t = useTheme();
+  const { t: tr } = useI18n();
   return (
-    <ScreenContainer>
-      <Text style={[styles.title, { color: t.text }]}>ThreeKip</Text>
-      <Text style={[styles.body, { color: t.text }]}>
-        Aplicación profesional de modelado 3D.
-      </Text>
-      <Text style={[styles.muted, { color: t.textMuted }]}>
-        El motor se renderiza dentro de un WebView de React Native, totalmente
-        desacoplado de la interfaz.
-      </Text>
+    <ScreenContainer style={styles.container}>
+      <View style={[styles.headerCard, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant }]}>
+        <View style={[styles.iconWrap, { backgroundColor: t.primaryContainer }]}>
+          <Icon name="Box" size={40} color={t.onPrimaryContainer} strokeWidth={2} />
+        </View>
+        <Text style={[styles.title, { color: t.text }]}>{tr.about.title}</Text>
+        <Text style={[styles.body, { color: t.text }]}>
+          {tr.about.subtitle}
+        </Text>
+        <View style={[styles.versionBadge, { backgroundColor: t.secondaryContainer }]}>
+          <Text style={[styles.versionText, { color: t.onSecondaryContainer }]}>
+            {tr.about.version}
+          </Text>
+        </View>
+      </View>
+
+      <View style={[styles.infoCard, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant }]}>
+        <Text style={[styles.infoTitle, { color: t.primary }]}>
+          {tr.settings.infoSection}
+        </Text>
+        <Text style={[styles.muted, { color: t.textMuted }]}>
+          {tr.about.runtimeDesc}
+        </Text>
+      </View>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  container: { paddingTop: spacing.md },
+  headerCard: {
+    alignItems: 'center',
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    padding: spacing.xl,
+    marginBottom: spacing.md,
+  },
+  iconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: radius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
   title: {
-    fontSize: typography.title.fontSize,
-    fontFamily: typography.title.fontFamily,
+    fontSize: typography.headlineSmall.fontSize,
+    fontFamily: typography.headlineSmall.fontFamily,
     fontWeight: '700',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   body: {
-    fontSize: typography.body.fontSize,
-    fontFamily: typography.body.fontFamily,
-    marginBottom: spacing.sm,
+    fontSize: typography.bodyLarge.fontSize,
+    fontFamily: typography.bodyLarge.fontFamily,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  versionBadge: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.full,
+  },
+  versionText: {
+    fontSize: typography.labelMedium.fontSize,
+    fontFamily: typography.labelMedium.fontFamily,
+    fontWeight: '600',
+  },
+  infoCard: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    padding: spacing.lg,
+  },
+  infoTitle: {
+    fontSize: typography.titleSmall.fontSize,
+    fontFamily: typography.titleSmall.fontFamily,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
   },
   muted: {
-    fontSize: typography.caption.fontSize,
-    fontFamily: typography.caption.fontFamily,
+    fontSize: typography.body.fontSize,
+    fontFamily: typography.body.fontFamily,
+    lineHeight: 20,
   },
 });

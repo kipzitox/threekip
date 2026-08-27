@@ -6,6 +6,7 @@
 
 var activeLayer = 0;
 var layerVisible = [true, true, true, true];
+var layerOrder = [0, 1, 2, 3]; // Default rendering order (index 0 is bottom, index 3 is top)
 
 function setActiveLayer(i) {
   activeLayer = i;
@@ -29,6 +30,13 @@ function applyLayerVisibility() {
   strokes.forEach(function (s) {
     var layer = s.layer != null ? s.layer : 1;
     s.mesh.visible = layerVisible[layer] !== false;
+    
+    // Set renderOrder based on layer position in layerOrder array.
+    // The visual list in #layers-pop should be top-to-bottom = top-layer to bottom-layer.
+    // So if layerOrder = [0, 1, 2, 3], and it's rendered as 3, 2, 1, 0 in DOM:
+    // index 3 is highest renderOrder.
+    var orderIdx = layerOrder.indexOf(layer);
+    s.mesh.renderOrder = orderIdx + 3; // +3 to stay above default grid/axis if they use lower orders
   });
   markDirty();
 }
@@ -106,6 +114,63 @@ function mergeLayer(srcLayer) {
   var btn = document.getElementById('blayers');
   var pop = document.getElementById('layers-pop');
   if (!btn || !pop) return;
+
+  function updateLayerListUI() {
+    var rows = Array.from(pop.querySelectorAll('.tb-lrow'));
+    rows.sort(function (a, b) {
+      var la = parseInt(a.getAttribute('data-layer'));
+      var lb = parseInt(b.getAttribute('data-layer'));
+      return layerOrder.indexOf(lb) - layerOrder.indexOf(la);
+    });
+    rows.forEach(function (row) { pop.appendChild(row); });
+  }
+
+  // Initialize draggable rows
+  [0, 1, 2, 3].forEach(function (i) {
+    var row = document.getElementById('tb-lrow' + i);
+    if (row) {
+      row.setAttribute('draggable', 'true');
+      row.addEventListener('dragstart', function (e) {
+        if (e.target.closest('.tb-leye') || e.target.closest('.tb-merge')) {
+          e.preventDefault();
+          return;
+        }
+        e.dataTransfer.setData('text/plain', i);
+        row.classList.add('dragging');
+      });
+      row.addEventListener('dragend', function () {
+        row.classList.remove('dragging');
+        pop.querySelectorAll('.tb-lrow').forEach(function (r) { r.classList.remove('drag-over'); });
+      });
+      row.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        row.classList.add('drag-over');
+      });
+      row.addEventListener('dragleave', function () {
+        row.classList.remove('drag-over');
+      });
+      row.addEventListener('drop', function (e) {
+        e.preventDefault();
+        var draggedLayer = parseInt(e.dataTransfer.getData('text/plain'));
+        var targetLayer = parseInt(row.getAttribute('data-layer'));
+        if (draggedLayer === targetLayer) return;
+
+        var oldIdx = layerOrder.indexOf(draggedLayer);
+        var newIdx = layerOrder.indexOf(targetLayer);
+
+        layerOrder.splice(oldIdx, 1);
+        layerOrder.splice(newIdx, 0, draggedLayer);
+
+        updateLayerListUI();
+        applyLayerVisibility();
+        if (window.SketchbookEventBus) window.SketchbookEventBus.emit('layerOrderChanged', { order: layerOrder });
+      });
+    }
+  });
+
+  // Initial sort
+  updateLayerListUI();
+
   function openLayersPop(trigger) {
     pop.classList.add('open');
     btn.classList.add('on');

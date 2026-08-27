@@ -1,5 +1,5 @@
 @media(max-aspect-ratio:2/3){
-  #topbar{top:6px;padding:3px 6px;gap:2px;max-width:calc(100vw - 80px)}
+  #topbar{display:none!important}
   #sidecol{display:none}
   #sbar{bottom:6px}
   #bhide{top:6px}
