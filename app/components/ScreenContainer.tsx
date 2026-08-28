@@ -1,5 +1,5 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, ViewStyle } from 'react-native';
+import { SafeAreaView, StyleSheet, ViewStyle, useWindowDimensions } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
 import { spacing } from '../theme';
 
@@ -11,8 +11,20 @@ export function ScreenContainer({
   style?: ViewStyle;
 }) {
   const t = useTheme();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 540;
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: t.background }, style]}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        {
+          backgroundColor: t.background,
+          padding: isMobile ? spacing.md : spacing.lg,
+        },
+        style,
+      ]}
+    >
       {children}
     </SafeAreaView>
   );
@@ -21,6 +33,5 @@ export function ScreenContainer({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: spacing.lg,
   },
 });

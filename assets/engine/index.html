@@ -163,7 +163,10 @@
   <button class="btn btn-pill" id="bscale" title="Export scale — cycles through real-world ratios" style="font-size:6.5px;width:auto;padding:0 6px;letter-spacing:.04em;opacity:0.45">OFF</button>
   <div class="tsep"></div>
   <!-- Layers -->
-  <button class="btn btn-pill" id="blayers" title="Layers" style="font-size:7px;width:auto;padding:0 7px;letter-spacing:.05em">LAYERS</button>
+  <button class="btn btn-pill" id="blayers" title="Capas / Layers" style="font-size:7.5px;width:auto;padding:0 8px;letter-spacing:.05em;display:inline-flex;align-items:center;gap:4px">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+    <span>LAYERS</span>
+  </button>
   <div class="tsep"></div>
   <!-- View -->
   <button class="btn btn-pill" id="bpersp" data-k="V" title="Toggle perspective/ortho (V)" style="font-size:7px;width:auto;padding:0 7px;letter-spacing:.04em">PERSP</button>
@@ -209,37 +212,106 @@
 
 <!-- Layers popover — triggered from topbar LAYERS button -->
 <div id="layers-pop">
+  <div class="layers-pop-header">
+    <div class="layers-pop-title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      <span>CAPAS</span>
+    </div>
+    <span class="layers-pop-hint">Arrastra para ordenar</span>
+  </div>
+
   <div class="tb-lrow active" id="tb-lrow0" data-layer="0">
-    <button class="tb-leye vis" id="tb-leye0">◉</button>
-    <span class="ldot" style="background:#b03020;width:7px;height:7px;border-radius:50%;flex-shrink:0"></span>
-    <span style="font-size:8px;color:var(--ink);font-family:'DM Mono',monospace;flex:1">BG</span>
-    <button class="tb-merge" id="tb-merge0" title="Merge layer to Merge layer">⊕</button>
+    <div class="tb-lrow-main">
+      <span class="tb-lgrip" title="Arrastra para reordenar">
+        <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor"><circle cx="2" cy="2" r="1.1"/><circle cx="6" cy="2" r="1.1"/><circle cx="2" cy="6" r="1.1"/><circle cx="6" cy="6" r="1.1"/><circle cx="2" cy="10" r="1.1"/><circle cx="6" cy="10" r="1.1"/></svg>
+      </span>
+      <button class="tb-leye vis" id="tb-leye0" title="Alternar visibilidad">
+        <svg class="icon-eye-open" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg class="icon-eye-closed" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+      </button>
+      <span class="ldot" style="background:#b03020"></span>
+      <span class="lname">Fondo (BG)</span>
+      <span class="lopac-val" id="tb-lopac-val0" title="Opacidad actual">100%</span>
+      <button class="tb-merge" id="tb-merge0" title="Fusionar capa">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 21h16"/></svg>
+      </button>
+    </div>
+    <div class="tb-lrow-sub">
+      <svg class="lopac-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+      <input type="range" class="tb-lslider" id="tb-lopac0" data-layer="0" min="0" max="100" value="100" step="1" title="Opacidad de capa">
+    </div>
   </div>
+
   <div class="tb-lrow" id="tb-lrow1" data-layer="1">
-    <button class="tb-leye vis" id="tb-leye1">◉</button>
-    <span class="ldot" style="background:#1a1a2e;width:7px;height:7px;border-radius:50%;flex-shrink:0"></span>
-    <span style="font-size:8px;color:var(--ink);font-family:'DM Mono',monospace;flex:1">Sketch</span>
-    <button class="tb-merge" id="tb-merge1" title="Merge layer to Merge layer">⊕</button>
+    <div class="tb-lrow-main">
+      <span class="tb-lgrip" title="Arrastra para reordenar">
+        <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor"><circle cx="2" cy="2" r="1.1"/><circle cx="6" cy="2" r="1.1"/><circle cx="2" cy="6" r="1.1"/><circle cx="6" cy="6" r="1.1"/><circle cx="2" cy="10" r="1.1"/><circle cx="6" cy="10" r="1.1"/></svg>
+      </span>
+      <button class="tb-leye vis" id="tb-leye1" title="Alternar visibilidad">
+        <svg class="icon-eye-open" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg class="icon-eye-closed" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+      </button>
+      <span class="ldot" style="background:#1a1a2e"></span>
+      <span class="lname">Boceto (Sketch)</span>
+      <span class="lopac-val" id="tb-lopac-val1" title="Opacidad actual">100%</span>
+      <button class="tb-merge" id="tb-merge1" title="Fusionar capa">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 21h16"/></svg>
+      </button>
+    </div>
+    <div class="tb-lrow-sub">
+      <svg class="lopac-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+      <input type="range" class="tb-lslider" id="tb-lopac1" data-layer="1" min="0" max="100" value="100" step="1" title="Opacidad de capa">
+    </div>
   </div>
+
   <div class="tb-lrow" id="tb-lrow2" data-layer="2">
-    <button class="tb-leye vis" id="tb-leye2">◉</button>
-    <span class="ldot" style="background:#1a9940;width:7px;height:7px;border-radius:50%;flex-shrink:0"></span>
-    <span style="font-size:8px;color:var(--ink);font-family:'DM Mono',monospace;flex:1">Notes</span>
-    <button class="tb-merge" id="tb-merge2" title="Merge layer to Merge layer">⊕</button>
+    <div class="tb-lrow-main">
+      <span class="tb-lgrip" title="Arrastra para reordenar">
+        <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor"><circle cx="2" cy="2" r="1.1"/><circle cx="6" cy="2" r="1.1"/><circle cx="2" cy="6" r="1.1"/><circle cx="6" cy="6" r="1.1"/><circle cx="2" cy="10" r="1.1"/><circle cx="6" cy="10" r="1.1"/></svg>
+      </span>
+      <button class="tb-leye vis" id="tb-leye2" title="Alternar visibilidad">
+        <svg class="icon-eye-open" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg class="icon-eye-closed" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+      </button>
+      <span class="ldot" style="background:#1a9940"></span>
+      <span class="lname">Notas (Notes)</span>
+      <span class="lopac-val" id="tb-lopac-val2" title="Opacidad actual">100%</span>
+      <button class="tb-merge" id="tb-merge2" title="Fusionar capa">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 21h16"/></svg>
+      </button>
+    </div>
+    <div class="tb-lrow-sub">
+      <svg class="lopac-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+      <input type="range" class="tb-lslider" id="tb-lopac2" data-layer="2" min="0" max="100" value="100" step="1" title="Opacidad de capa">
+    </div>
   </div>
+
   <div class="tb-lrow" id="tb-lrow3" data-layer="3" style="display:none">
-    <button class="tb-leye vis" id="tb-leye3">◉</button>
-    <span class="ldot" style="background:#8b5cf6;width:7px;height:7px;border-radius:50%;flex-shrink:0"></span>
-    <span style="font-size:8px;color:var(--ink);font-family:'DM Mono',monospace;flex:1">Merged</span>
+    <div class="tb-lrow-main">
+      <span class="tb-lgrip" title="Capa de fusión">
+        <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor"><circle cx="2" cy="2" r="1.1"/><circle cx="6" cy="2" r="1.1"/><circle cx="2" cy="6" r="1.1"/><circle cx="6" cy="6" r="1.1"/><circle cx="2" cy="10" r="1.1"/><circle cx="6" cy="10" r="1.1"/></svg>
+      </span>
+      <button class="tb-leye vis" id="tb-leye3" title="Alternar visibilidad">
+        <svg class="icon-eye-open" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg class="icon-eye-closed" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+      </button>
+      <span class="ldot" style="background:#8b5cf6"></span>
+      <span class="lname">Fusionado (Merged)</span>
+      <span class="lopac-val" id="tb-lopac-val3" title="Opacidad actual">100%</span>
+    </div>
+    <div class="tb-lrow-sub">
+      <svg class="lopac-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+      <input type="range" class="tb-lslider" id="tb-lopac3" data-layer="3" min="0" max="100" value="100" step="1" title="Opacidad de capa">
+    </div>
   </div>
 </div>
 
 <!-- Background color popover -->
 <div id="bgpop">
-  <div class="bgpop-swatch on" id="bgpop-beige" title="Tan" style="background:#cdb899"></div>
-  <div class="bgpop-swatch" id="bgpop-white" title="White" style="background:#f5f0e8;border-color:var(--bdr)"></div>
+  <div class="bgpop-swatch on" id="bgpop-white" title="White" style="background:#ffffff;border-color:var(--bdr)"></div>
+  <div class="bgpop-swatch" id="bgpop-cream" title="Cream" style="background:#f5f0e8"></div>
   <div class="bgpop-swatch" id="bgpop-black" title="Black" style="background:#1a1a2e"></div>
-  <div id="bgpop-pick" title="Custom color"><input type="color" id="bgpop-custom" value="#cdb899"></div>
+  <div id="bgpop-pick" title="Custom color"><input type="color" id="bgpop-custom" value="#ffffff"></div>
 </div>
 
 <!-- Size picker popover — custom value -->
@@ -401,7 +473,7 @@
     <div class="cw" style="background:#ffffff;border:1px solid var(--bdr)" data-c="#ffffff"></div>
     <div class="cw" style="background:#c0392b" data-c="#c0392b"></div>
     <div class="cw" style="background:#2563a8" data-c="#2563a8"></div>
-    <div class="cw" id="cw-bg" style="background:#cdb899;border:1px solid var(--bdr)" data-c="#cdb899" title="Background color"></div>
+    <div class="cw" id="cw-bg" style="background:#16a34a;border:1px solid var(--bdr)" data-c="#16a34a" title="Green"></div>
     <div id="ccpick"><input type="color" id="cpick" value="#2a9d8f"></div>
   </div>
 
@@ -605,7 +677,7 @@
     <div class="cw" style="background:#fff;border:2px solid var(--bdr);width:26px;height:26px;flex-shrink:0" data-c="#ffffff"></div>
     <div class="cw" style="background:#c0392b;width:26px;height:26px;flex-shrink:0" data-c="#c0392b"></div>
     <div class="cw" style="background:#2563a8;width:26px;height:26px;flex-shrink:0" data-c="#2563a8"></div>
-    <div class="cw" style="background:#cdb899;border:1px solid var(--bdr);width:26px;height:26px;flex-shrink:0" data-c="#cdb899"></div>
+    <div class="cw" style="background:#16a34a;border:1px solid var(--bdr);width:26px;height:26px;flex-shrink:0" data-c="#16a34a"></div>
     <div style="width:1px;height:20px;background:var(--bdr);flex-shrink:0;margin:0 1px"></div>
     <!-- Size presets -->
     <button class="bprev-btn cur" data-sz="1" style="width:26px;height:30px;flex-shrink:0;flex-direction:column;gap:1px"><canvas id="sz-p1-pb" width="20" height="16"></canvas><span style="font-size:5px;color:var(--mut);line-height:1">1</span></button>
@@ -706,7 +778,7 @@
   <div class="cw" style="background:#ffffff;border:1px solid var(--bdr)" data-c="#ffffff"></div>
   <div class="cw" style="background:#c0392b" data-c="#c0392b"></div>
   <div class="cw" style="background:#2563a8" data-c="#2563a8"></div>
-  <div class="cw" style="background:#cdb899;border:1px solid var(--bdr)" data-c="#cdb899"></div>
+  <div class="cw" style="background:#16a34a;border:1px solid var(--bdr)" data-c="#16a34a"></div>
 </div>
 
 <!-- Cycle button popovers (shared, repositioned on open) -->

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, ScrollView, Switch, StyleSheet, Alert, Animated, Easing, Platform, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, ScrollView, Switch, StyleSheet, Alert, Animated, Easing, Platform, Modal, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import type { SketchbookBridge, WebViewHandleLike } from '../services/sketchbookBridge';
-import { Icon, IconButton, Sheet, SectionTitle } from './primitives';
+import { Icon, IconButton, Sheet, SectionTitle, Button } from './primitives';
 import { ExportDialog } from './ExportDialog';
 import { useUIStore } from '../stores/UIStore';
 import { useSettingsStore } from '../stores/SettingsStore';
@@ -27,6 +27,7 @@ export function EditorUI({
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -42,6 +43,7 @@ export function EditorUI({
   const [pan, setPan] = useState(false);
   const [orbit, setOrbit] = useState(true);
   const [stylus, setStylus] = useState(false);
+  const [activeTool, setActiveTool] = useState<'draw' | 'erase' | 'select'>('draw');
   const [gestswap, setGestswap] = useState(false);
   const [lcl, setLcl] = useState(false);
 
@@ -169,6 +171,9 @@ export function EditorUI({
         if (typeof d?.gestswap === 'boolean') setGestswap(d.gestswap);
         if (typeof d?.lcl === 'boolean') setLcl(d.lcl);
       }),
+      bridge.on('requestClearConfirm' as any, () => {
+        setConfirmClearOpen(true);
+      }),
     ];
     return () => offs.forEach((f) => f());
   }, [bridge]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -210,6 +215,14 @@ export function EditorUI({
   const toggleEngine = (sel: string, setter: React.Dispatch<React.SetStateAction<boolean>>) => {
     clickEngine(sel);
     setter((p) => !p);
+  };
+
+  const handleSetTool = (tool: 'draw' | 'erase' | 'select') => {
+    setActiveTool(tool);
+    if (tool === 'draw') clickEngine('#sdraw');
+    else if (tool === 'erase') clickEngine('#serase');
+    else if (tool === 'select') clickEngine('#sselect');
+    showToast(tool === 'draw' ? tr.editor.toasts.drawing : tool === 'erase' ? tr.editor.toasts.erasing : tr.editor.toasts.selecting);
   };
 
   const handleUndo = async () => {
@@ -263,8 +276,12 @@ export function EditorUI({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [canUndo, canRedo]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const btnSz = isTablet ? 36 : 32;
-  const icnSz = isTablet ? 18 : 17;
+  const isMobile = width < 768;
+  const isSmallPhone = width < 380;
+  const btnSz = isTablet ? 38 : isSmallPhone ? 32 : 36;
+  const icnSz = isTablet ? 20 : isSmallPhone ? 16 : 18;
+  const bBarBtnSz = isSmallPhone ? 36 : 40;
+  const bBarIconSz = isSmallPhone ? 16 : 18;
 
   return (
     <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
@@ -280,45 +297,21 @@ export function EditorUI({
           },
         ]}
       >
-        {/* Left Section: Back, Brand / Project Title & Quick Actions */}
-        <View pointerEvents="auto" style={[styles.topLeft, isTablet && styles.topLeftTablet, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant, ...sh(t) }]}>
-          <IconButton name="ArrowLeft" size={icnSz} btnSize={btnSz} variant="flat" onPress={handleBack} />
-          <View style={styles.brandChip}>
-            <Icon name="Box" size={isTablet ? 17 : 15} color={t.primary} strokeWidth={2.4} />
-            <Text style={[styles.brandText, isTablet && styles.brandTextTablet, { color: t.text }]}>ThreeKip</Text>
-            {projectName ? (
-              <Text style={[styles.projText, isTablet && styles.projTextTablet, { color: t.textMuted }]} numberOfLines={1}>
-                · {projectName}
-              </Text>
-            ) : null}
+        {/* Left Section: Back Button + Project Title Badge */}
+        <View pointerEvents="auto" style={[styles.topSegment, styles.topSegmentTablet, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant, ...sh(t) }]}>
+          <IconButton name="ChevronLeft" size={icnSz + 2} btnSize={btnSz} variant="ghost" onPress={handleBack} />
+          <View style={styles.projBadge}>
+            <Text style={[styles.projText, isMobile && { maxWidth: 105 }, { color: t.text }]} numberOfLines={1}>
+              {projectName || tr.library.untitled}
+            </Text>
           </View>
-          {isTablet && (
-            <>
-              <View style={[styles.div, { backgroundColor: t.outlineVariant }]} />
-              <IconButton
-                name="FilePlus"
-                size={icnSz}
-                btnSize={btnSz}
-                variant="flat"
-                onPress={() => clickEngine('#bnew, #pb-new')}
-              />
-              <IconButton
-                name="Save"
-                size={icnSz}
-                btnSize={btnSz}
-                variant="flat"
-                onPress={() => onSave(true)}
-              />
-            </>
-          )}
         </View>
 
-        {/* Tablet-Only Center Toolbar: Direct Viewport, Geometry & Navigation controls */}
+        {/* Center: Quick Scene View Controls (Tablets & Desktop) */}
         {isTablet && (
-          <View pointerEvents="auto" style={[styles.topCenterTablet, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant, ...sh(t) }]}>
-            {/* Viewport / Grid controls */}
+          <View pointerEvents="auto" style={[styles.topSegment, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant, ...sh(t) }]}>
             <IconButton
-              name="Grid3x3"
+              name="LayoutGrid"
               size={icnSz}
               btnSize={btnSz}
               variant="flat"
@@ -334,7 +327,7 @@ export function EditorUI({
               onPress={() => toggleEngine('#baxis, #pb-axis', setAxis)}
             />
             <IconButton
-              name={persp ? 'Box' : 'Square'}
+              name="Box"
               size={icnSz}
               btnSize={btnSz}
               variant="flat"
@@ -342,7 +335,7 @@ export function EditorUI({
               onPress={() => toggleEngine('#bpersp, #pb-nav-persp', setPersp)}
             />
             <IconButton
-              name="Layers2"
+              name="Layers"
               size={icnSz}
               btnSize={btnSz}
               variant="flat"
@@ -350,193 +343,153 @@ export function EditorUI({
               onPress={() => toggleEngine('#bsurf, #pb-surf', setSurf)}
             />
             <IconButton
-              name="Droplets"
+              name="Target"
               size={icnSz}
               btnSize={btnSz}
               variant="flat"
               active={depth}
               onPress={() => toggleEngine('#bdepth, #pb-depth', setDepth)}
             />
-
-            <View style={[styles.div, { backgroundColor: t.outlineVariant }]} />
-
-            {/* Navigation / Stylus Modes */}
-            <IconButton
-              name="Orbit"
-              size={icnSz}
-              btnSize={btnSz}
-              variant="flat"
-              active={orbit}
-              onPress={() => { clickEngine('#borbit'); setOrbit(true); setPan(false); }}
-            />
-            <IconButton
-              name="Hand"
-              size={icnSz}
-              btnSize={btnSz}
-              variant="flat"
-              active={pan}
-              onPress={() => { clickEngine('#bpan'); setPan(true); setOrbit(false); }}
-            />
-            <IconButton
-              name="PenTool"
-              size={icnSz}
-              btnSize={btnSz}
-              variant="flat"
-              active={stylus}
-              onPress={() => toggleEngine('#bstylus, #pb-stylus', setStylus)}
-            />
-            <IconButton
-              name="Move3d"
-              size={icnSz}
-              btnSize={btnSz}
-              variant="flat"
-              active={lcl}
-              onPress={() => toggleEngine('#lcl-float, #glocal, #pb-glocal', setLcl)}
-            />
           </View>
         )}
 
-        {/* Right Section: History, Layers, Export & Settings */}
-        <View pointerEvents="auto" style={[isTablet ? styles.topRightTablet : styles.topRight, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant, ...sh(t) }]}>
-          {isTablet ? (
-            <View style={styles.topRightTabletContent}>
+        {/* Right Section: Save, Share & Settings */}
+        <View pointerEvents="auto" style={[styles.topSegment, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant, ...sh(t) }]}>
+          <IconButton
+            name="Save"
+            size={icnSz}
+            btnSize={btnSz}
+            variant="flat"
+            onPress={() => onSave(true)}
+          />
+          <IconButton
+            name="Share"
+            size={icnSz}
+            btnSize={btnSz}
+            variant="flat"
+            onPress={() => setExportOpen(true)}
+          />
+          {isWideTablet && (
+            <IconButton
+              name={themeMode === 'dark' ? 'Sun' : 'Moon'}
+              size={icnSz}
+              btnSize={btnSz}
+              variant="flat"
+              onPress={toggleTheme}
+            />
+          )}
+          <View style={[styles.div, { backgroundColor: t.outlineVariant }]} />
+          <IconButton
+            name="Menu"
+            size={icnSz}
+            btnSize={btnSz}
+            variant="flat"
+            onPress={() => setSettingsOpen(true)}
+          />
+        </View>
+      </Animated.View>
+
+      {/* Bottom Control Bar (Mobile & Tablet ergonomic bar) */}
+      {!isWideTablet && (
+        <Animated.View
+          pointerEvents="box-none"
+          style={[
+            styles.bottomBarWrap,
+            {
+              opacity: appear,
+              transform: [{ translateY: appear.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }],
+            },
+          ]}
+        >
+          <View pointerEvents="auto" style={[styles.bottomBar, isSmallPhone && styles.bottomBarSmall, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant, ...sh(t) }]}>
+            {/* Main Tools Group */}
+            <View style={[styles.toolGroup, isSmallPhone && { gap: 2 }]}>
               <IconButton
-                name="Undo2"
-                size={icnSz}
-                btnSize={btnSz}
-                variant="flat"
-                active={canUndo}
+                name="Pencil"
+                size={bBarIconSz}
+                btnSize={bBarBtnSz}
+                variant={activeTool === 'draw' ? 'tonal' : 'ghost'}
+                active={activeTool === 'draw'}
+                onPress={() => handleSetTool('draw')}
+              />
+              <IconButton
+                name="Eraser"
+                size={bBarIconSz}
+                btnSize={bBarBtnSz}
+                variant={activeTool === 'erase' ? 'tonal' : 'ghost'}
+                active={activeTool === 'erase'}
+                onPress={() => handleSetTool('erase')}
+              />
+              <IconButton
+                name="MousePointer2"
+                size={bBarIconSz}
+                btnSize={bBarBtnSz}
+                variant={activeTool === 'select' ? 'tonal' : 'ghost'}
+                active={activeTool === 'select'}
+                onPress={() => handleSetTool('select')}
+              />
+            </View>
+
+            <View style={[styles.div, { backgroundColor: t.outlineVariant, height: 22 }]} />
+
+            {/* History & Meta Group */}
+            <View style={[styles.toolGroup, isSmallPhone && { gap: 2 }]}>
+              <IconButton
+                name="Undo"
+                size={bBarIconSz}
+                btnSize={bBarBtnSz}
+                variant="ghost"
+                disabled={!canUndo}
                 onPress={handleUndo}
               />
               <IconButton
-                name="Redo2"
-                size={icnSz}
-                btnSize={btnSz}
-                variant="flat"
-                active={canRedo}
+                name="Redo"
+                size={bBarIconSz}
+                btnSize={bBarBtnSz}
+                variant="ghost"
+                disabled={!canRedo}
                 onPress={handleRedo}
               />
-              <View style={[styles.div, { backgroundColor: t.outlineVariant }]} />
               <IconButton
-                name="Layers"
-                size={icnSz}
-                btnSize={btnSz}
-                variant="flat"
-                onPress={() => clickEngine('#blayers')}
-              />
-              {isWideTablet && (
-                <>
-                  <IconButton
-                    name="Bookmark"
-                    size={icnSz}
-                    btnSize={btnSz}
-                    variant="flat"
-                    onPress={() => clickEngine('#vwbtn, #pb-vwbtn')}
-                  />
-                  <IconButton
-                    name="Palette"
-                    size={icnSz}
-                    btnSize={btnSz}
-                    variant="flat"
-                    onPress={() => clickEngine('#bbg, #pb-bg')}
-                  />
-                </>
-              )}
-              <IconButton
-                name="Share2"
-                size={icnSz}
-                btnSize={btnSz}
-                variant="flat"
-                onPress={() => setExportOpen(true)}
-              />
-              <View style={[styles.div, { backgroundColor: t.outlineVariant }]} />
-              <IconButton
-                name="Settings"
-                size={icnSz}
-                btnSize={btnSz}
-                variant="flat"
-                onPress={() => setSettingsOpen(true)}
-              />
-            </View>
-          ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.topRightScroll}
-            >
-              <IconButton
-                name="Grid3x3"
-                size={17}
-                btnSize={34}
-                variant="flat"
+                name="LayoutGrid"
+                size={bBarIconSz}
+                btnSize={bBarBtnSz}
+                variant={grid ? 'tonal' : 'ghost'}
                 active={grid}
                 onPress={() => toggleEngine('#bgrid, #pb-grid', setGrid)}
               />
-              <IconButton
-                name="Compass"
-                size={17}
-                btnSize={34}
-                variant="flat"
-                active={axis}
-                onPress={() => toggleEngine('#baxis, #pb-axis', setAxis)}
-              />
-              <IconButton
-                name={persp ? 'Box' : 'Square'}
-                size={17}
-                btnSize={34}
-                variant="flat"
-                active={persp}
-                onPress={() => toggleEngine('#bpersp, #pb-nav-persp', setPersp)}
-              />
-              <IconButton
-                name="Layers"
-                size={17}
-                btnSize={34}
-                variant="flat"
-                onPress={() => clickEngine('#blayers')}
-              />
-              <IconButton
-                name="Undo2"
-                size={17}
-                btnSize={34}
-                variant="flat"
-                active={canUndo}
-                onPress={handleUndo}
-              />
-              <IconButton
-                name="Redo2"
-                size={17}
-                btnSize={34}
-                variant="flat"
-                active={canRedo}
-                onPress={handleRedo}
-              />
-              <IconButton
-                name="Share2"
-                size={17}
-                btnSize={34}
-                variant="flat"
-                onPress={() => setExportOpen(true)}
-              />
-              <View style={[styles.div, { backgroundColor: t.outlineVariant }]} />
-              <IconButton
-                name="Save"
-                size={17}
-                btnSize={34}
-                variant="flat"
-                onPress={() => onSave(true)}
-              />
-              <IconButton
-                name="Settings"
-                size={17}
-                btnSize={34}
-                variant="flat"
-                onPress={() => setSettingsOpen(true)}
-              />
-            </ScrollView>
-          )}
-        </View>
-      </Animated.View>
+            </View>
+          </View>
+        </Animated.View>
+      )}
+
+      {/* Tablet Sidebar Toolbar (Wide screens) */}
+      {isWideTablet && (
+        <Animated.View
+          pointerEvents="auto"
+          style={[
+            styles.sideBar,
+            {
+              opacity: appear,
+              backgroundColor: t.surfaceContainerLow,
+              borderColor: t.outlineVariant,
+              transform: [{ translateX: appear.interpolate({ inputRange: [0, 1], outputRange: [-20, 0] }) }],
+              ...sh(t),
+            },
+          ]}
+        >
+          <IconButton name="Pencil" size={20} btnSize={46} active={activeTool === 'draw'} variant={activeTool === 'draw' ? 'filled' : 'ghost'} onPress={() => handleSetTool('draw')} />
+          <IconButton name="Eraser" size={20} btnSize={46} active={activeTool === 'erase'} variant={activeTool === 'erase' ? 'filled' : 'ghost'} onPress={() => handleSetTool('erase')} />
+          <IconButton name="MousePointer2" size={20} btnSize={46} active={activeTool === 'select'} variant={activeTool === 'select' ? 'filled' : 'ghost'} onPress={() => handleSetTool('select')} />
+          <View style={[styles.divH, { backgroundColor: t.outlineVariant }]} />
+          <IconButton name="Undo" size={20} btnSize={46} variant="ghost" disabled={!canUndo} onPress={handleUndo} />
+          <IconButton name="Redo" size={20} btnSize={46} variant="ghost" disabled={!canRedo} onPress={handleRedo} />
+          <View style={[styles.divH, { backgroundColor: t.outlineVariant }]} />
+          <IconButton name="Box" size={20} btnSize={46} active={persp} variant="ghost" onPress={() => toggleEngine('#bpersp, #pb-nav-persp', setPersp)} />
+          <IconButton name="Grid3x3" size={20} btnSize={46} active={grid} variant="ghost" onPress={() => toggleEngine('#bgrid, #pb-grid', setGrid)} />
+          <IconButton name="Layers" size={20} btnSize={46} variant="ghost" onPress={() => clickEngine('#blayers')} />
+        </Animated.View>
+      )}
 
       {/* Floating Toast Notification */}
       {toastMsg && (
@@ -562,20 +515,65 @@ export function EditorUI({
         onClose={() => setExportOpen(false)}
       />
 
+      {/* Clear Canvas Confirmation Modal */}
+      <Modal
+        visible={confirmClearOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmClearOpen(false)}
+      >
+        <View style={styles.confirmModalScrim}>
+          <View style={[styles.confirmModalCard, { backgroundColor: t.surfaceContainerHigh, borderColor: t.outlineVariant }]}>
+            <View style={styles.confirmIconContainer}>
+              <Icon name="Eraser" size={26} color="#d93829" />
+            </View>
+            <Text style={[styles.confirmTitle, { color: t.text }]}>
+              {tr.editor.clearConfirmTitle}
+            </Text>
+            <Text style={[styles.confirmMessage, { color: t.subtext }]}>
+              {tr.editor.clearConfirmMessage}
+            </Text>
+            <View style={styles.confirmActionsRow}>
+              <Button
+                label={tr.common.cancel}
+                variant="outlined"
+                onPress={() => setConfirmClearOpen(false)}
+                style={{ flex: 1 }}
+              />
+              <Button
+                label={tr.editor.clearAll}
+                variant="danger"
+                onPress={() => {
+                  setConfirmClearOpen(false);
+                  webRef.current?.injectJavaScript(`
+                    if (typeof clearAll === 'function') {
+                      clearAll();
+                    }
+                    true;
+                  `);
+                  showToast(tr.editor.toasts.cleared);
+                }}
+                style={{ flex: 1 }}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Menu / settings sheet — preserves every engine function */}
       <Sheet visible={settingsOpen} onClose={() => setSettingsOpen(false)} title={tr.editor.toolsMenu} maxWidth={640}>
         <SectionTitle>{tr.editor.drawingToolsSection}</SectionTitle>
-        <View style={isTablet ? styles.settingsGridTablet : undefined}>
-          <ActionRow icon="PenTool" label={tr.editor.drawMode} onPress={() => { clickEngine('#sdraw'); setSettingsOpen(false); showToast(tr.editor.toasts.drawing); }} t={t} />
-          <ActionRow icon="Eraser" label={tr.editor.eraseMode} onPress={() => { clickEngine('#serase'); setSettingsOpen(false); showToast(tr.editor.toasts.erasing); }} t={t} />
-          <ActionRow icon="Hand" label={tr.editor.selectMode} onPress={() => { clickEngine('#sselect'); setSettingsOpen(false); showToast(tr.editor.toasts.selecting); }} t={t} />
+        <View style={styles.actionGrid}>
+          <ActionRow icon="Pencil" label={tr.editor.drawMode} onPress={() => { handleSetTool('draw'); setSettingsOpen(false); }} t={t} />
+          <ActionRow icon="Eraser" label={tr.editor.eraseMode} onPress={() => { handleSetTool('erase'); setSettingsOpen(false); }} t={t} />
+          <ActionRow icon="MousePointer2" label={tr.editor.selectMode} onPress={() => { handleSetTool('select'); setSettingsOpen(false); }} t={t} />
           <ActionRow icon="Square" label={tr.editor.flatBrush} onPress={() => { clickEngine('#sflat'); setSettingsOpen(false); showToast(tr.editor.toasts.flat); }} t={t} />
           <ActionRow icon="Droplets" label={tr.editor.smoothStroke} onPress={() => { clickEngine('#ssmooth'); setSettingsOpen(false); showToast(tr.editor.toasts.smooth); }} t={t} />
           <ActionRow icon="Scaling" label={tr.editor.velocityStroke} onPress={() => { clickEngine('#svel'); setSettingsOpen(false); showToast(tr.editor.toasts.vel); }} t={t} />
         </View>
 
         <SectionTitle>{tr.editor.cameraSection}</SectionTitle>
-        <View style={isTablet ? styles.settingsGridTablet : undefined}>
+        <View style={styles.actionGrid}>
           <ActionRow icon="Orbit" label={tr.editor.orbitMode} active={orbit} onPress={() => { clickEngine('#borbit'); setOrbit(true); setPan(false); }} t={t} />
           <ActionRow icon="Hand" label={tr.editor.panMode} active={pan} onPress={() => { clickEngine('#bpan'); setPan(true); setOrbit(false); }} t={t} />
           <ActionRow icon="Locate" label={tr.editor.resetCam} onPress={() => { clickEngine('#nav-reset, #pb-nav-reset'); setSettingsOpen(false); }} t={t} />
@@ -595,7 +593,7 @@ export function EditorUI({
         <ActionRow icon="SunMoon" label={tr.editor.themeToggle} onPress={() => clickEngine('#btheme, #pb-theme')} t={t} />
 
         <SectionTitle>{tr.editor.sceneAndRenderSection}</SectionTitle>
-        <View style={isTablet ? styles.settingsGridTablet : undefined}>
+        <View style={isTablet ? styles.actionGrid : undefined}>
           <SwitchRow label={tr.editor.gridToggle} value={grid} onValueChange={() => toggleEngine('#bgrid, #pb-grid', setGrid)} t={t} />
           <SwitchRow label={tr.editor.axisToggle} value={axis} onValueChange={() => toggleEngine('#baxis, #pb-axis', setAxis)} t={t} />
           <SwitchRow label={tr.editor.perspToggle} value={persp} onValueChange={() => toggleEngine('#bpersp, #pb-nav-persp', setPersp)} t={t} />
@@ -606,15 +604,17 @@ export function EditorUI({
         <ActionRow icon="Droplets" label={tr.editor.depthOp} onPress={() => { clickEngine('#bdepth-op, #pb-depthop'); setSettingsOpen(false); }} t={t} />
 
         <SectionTitle>{tr.editor.navigationSection}</SectionTitle>
-        <View style={isTablet ? styles.settingsGridTablet : undefined}>
+        <View style={isTablet ? styles.actionGrid : undefined}>
           <SwitchRow label={tr.editor.gestSwap} value={gestswap} onValueChange={() => toggleEngine('#bgestswap, #pb-gestswap', setGestswap)} t={t} />
           <SwitchRow label={tr.editor.stylusMode} value={stylus} onValueChange={() => toggleEngine('#bstylus, #pb-stylus', setStylus)} t={t} />
+        </View>
+        <View style={styles.actionGrid}>
           <ActionRow icon="Move3d" label={tr.editor.lclGizmo} active={lcl} onPress={() => toggleEngine('#lcl-float, #glocal, #pb-glocal', setLcl)} t={t} />
           <ActionRow icon="Compass" label={tr.editor.snap45} onPress={() => { clickEngine('#gsnap, #pb-gsnap'); }} t={t} />
         </View>
 
         <SectionTitle>{tr.editor.sceneAndBgSection}</SectionTitle>
-        <View style={isTablet ? styles.settingsGridTablet : undefined}>
+        <View style={styles.actionGrid}>
           <ActionRow icon="FileStack" label={tr.editor.pages} onPress={() => { clickEngine('#pgbtn, #pb-pgbtn'); setSettingsOpen(false); }} t={t} />
           <ActionRow icon="Bookmark" label={tr.editor.savedViews} onPress={() => { clickEngine('#vwbtn, #pb-vwbtn'); setSettingsOpen(false); }} t={t} />
           <ActionRow icon="Palette" label={tr.editor.bgPalette} onPress={() => { clickEngine('#bbg, #pb-bg'); setSettingsOpen(false); }} t={t} />
@@ -631,16 +631,16 @@ export function EditorUI({
         <SwitchRow label={tr.editor.confirmExitPref} value={confirmExit} onValueChange={setConfirmExit} t={t} />
 
         <SectionTitle>{tr.editor.projectAndMeshSection}</SectionTitle>
-        <View style={isTablet ? styles.settingsGridTablet : undefined}>
+        <View style={styles.actionGrid}>
           <ActionRow icon="Share2" label={tr.editor.exportFile} onPress={() => { setSettingsOpen(false); setExportOpen(true); }} t={t} />
           <ActionRow icon="FilePlus" label={tr.editor.newProject} onPress={() => { clickEngine('#bnew, #pb-new'); setSettingsOpen(false); }} t={t} />
           <ActionRow icon="FolderOpen" label={tr.editor.loadJson} onPress={onLoadFile} t={t} />
           <ActionRow icon="Image" label={tr.editor.quickPng} onPress={() => { clickEngine('#bpng, #pb-png'); setSettingsOpen(false); }} t={t} />
           <ActionRow icon="Scaling" label={tr.editor.exportScale} onPress={() => { clickEngine('#bscale'); setSettingsOpen(false); }} t={t} />
           <ActionRow icon="GitMerge" label={tr.editor.createLoft} onPress={() => { clickEngine('#sg-loft'); setSettingsOpen(false); }} t={t} />
+          <ActionRow icon="Eraser" label={tr.editor.clearAll} danger onPress={() => { setSettingsOpen(false); setConfirmClearOpen(true); }} t={t} />
+          <ActionRow icon="Trash2" label={tr.editor.deleteLoft} danger onPress={() => { clickEngine('#bdelloft'); setSettingsOpen(false); }} t={t} />
         </View>
-        <ActionRow icon="Eraser" label={tr.editor.clearAll} danger onPress={() => { clickEngine('#bclear, #pb-clear'); setSettingsOpen(false); }} t={t} />
-        <ActionRow icon="Trash2" label={tr.editor.deleteLoft} danger onPress={() => { clickEngine('#bdelloft'); setSettingsOpen(false); }} t={t} />
       </Sheet>
     </View>
   );
@@ -723,7 +723,7 @@ function sh(t: ReturnType<typeof useTheme>) {
 const styles = StyleSheet.create({
   topBar: {
     position: 'absolute',
-    top: spacing.md,
+    top: spacing.sm,
     left: spacing.md,
     right: spacing.md,
     flexDirection: 'row',
@@ -731,25 +731,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   topBarTablet: {
-    top: spacing.md + 2,
+    top: spacing.md,
     left: spacing.lg,
     right: spacing.lg,
     gap: spacing.md,
-  },
-  topLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-    borderRadius: radius.full,
-    borderWidth: 1,
-  },
-  topLeftTablet: {
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    borderRadius: radius.full,
-    gap: 6,
   },
   brandChip: {
     flexDirection: 'row',
@@ -778,84 +763,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     maxWidth: 240,
   },
-  topCenterTablet: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    gap: 4,
-  },
-  topRightTablet: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 8,
-    borderRadius: radius.full,
-    borderWidth: 1,
-  },
-  topRightTabletContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  topRight: {
-    flex: 1,
-    marginLeft: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    overflow: 'hidden',
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-    borderRadius: radius.full,
-    borderWidth: 1,
-  },
-  topRightScroll: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
   div: {
     width: 1,
     height: 22,
     marginHorizontal: 4,
     opacity: 0.7,
   },
-  settingsGridTablet: {
+  actionGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.xs,
     borderBottomWidth: 1,
-    minWidth: '48%',
+    width: '100%',
   },
   rowLabel: {
-    fontSize: typography.bodyLarge.fontSize,
-    fontFamily: typography.bodyLarge.fontFamily,
-    letterSpacing: 0.2,
+    fontSize: typography.bodyMedium.fontSize,
+    fontFamily: typography.bodyMedium.fontFamily,
+    letterSpacing: 0.15,
+    flex: 1,
+    paddingRight: spacing.xs,
   },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    paddingHorizontal: spacing.md,
+    gap: spacing.xs + 4,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
     borderRadius: radius.lg,
     borderWidth: 1,
     marginTop: spacing.xs,
-    minWidth: '48%',
-    flex: 1,
+    flexBasis: '47%',
+    flexGrow: 1,
+    minWidth: 130,
   },
   actionIconWrap: {
-    width: 34,
-    height: 34,
+    width: 32,
+    height: 32,
     borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
@@ -864,6 +814,7 @@ const styles = StyleSheet.create({
     fontSize: typography.labelLarge.fontSize,
     fontFamily: typography.labelLarge.fontFamily,
     letterSpacing: 0.1,
+    flexShrink: 1,
   },
   toastContainer: {
     position: 'absolute',
@@ -884,5 +835,53 @@ const styles = StyleSheet.create({
     fontFamily: typography.labelLarge.fontFamily,
     fontWeight: '500',
     letterSpacing: 0.2,
+  },
+  confirmModalScrim: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  confirmModalCard: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: radius.xl,
+    padding: spacing.xl,
+    borderWidth: 1,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
+  },
+  confirmIconContainer: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(217, 56, 41, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  confirmTitle: {
+    fontSize: typography.titleLarge.fontSize,
+    fontFamily: typography.titleLarge.fontFamily,
+    fontWeight: '700',
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  confirmMessage: {
+    fontSize: typography.bodyMedium.fontSize,
+    fontFamily: typography.bodyMedium.fontFamily,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+    lineHeight: 20,
+  },
+  confirmActionsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    width: '100%',
   },
 });

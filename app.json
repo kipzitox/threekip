@@ -10,11 +10,11 @@
     "icon": "./assets/engine/icon-512.png",
     "splash": {
       "image": "./assets/engine/icon-512.png",
-      "backgroundColor": "#cdb899",
+      "backgroundColor": "#ffffff",
       "resizeMode": "contain"
     },
     "androidStatusBar": {
-      "backgroundColor": "#cdb899",
+      "backgroundColor": "#ffffff",
       "translucent": false
     },
     "ios": {
@@ -24,14 +24,14 @@
     "android": {
       "package": "com.sketchbook.mobile",
       "navigationBar": {
-        "backgroundColor": "#cdb899",
+        "backgroundColor": "#ffffff",
         "visible": true
       },
       "softwareKeyboardLayoutMode": "pan",
       "permissions": [],
       "adaptiveIcon": {
         "foregroundImage": "./assets/engine/icon-512.png",
-        "backgroundColor": "#cdb899"
+        "backgroundColor": "#ffffff"
       }
     },
     "plugins": ["expo-router", "./plugins/withEngineAssets.js"]

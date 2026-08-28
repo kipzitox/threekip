@@ -6,7 +6,7 @@ import {
   FlatList,
   Pressable,
   ScrollView,
-  Dimensions,
+  useWindowDimensions,
   StyleSheet,
   Alert,
   Platform,
@@ -133,7 +133,22 @@ export default function Library() {
     }
   };
 
-  const cardWidth = (Dimensions.get('window').width - spacing.lg * 3) / 2;
+  const { width } = useWindowDimensions();
+  const isMobileScreen = width < 540;
+  const numColumns = useMemo(() => {
+    if (width < 540) return 1;
+    if (width < 840) return 2;
+    if (width < 1140) return 3;
+    if (width < 1440) return 4;
+    return 5;
+  }, [width]);
+
+  const cardWidth = useMemo(() => {
+    const containerWidth = Math.min(width, 1280);
+    const pad = isMobileScreen ? spacing.md : spacing.lg;
+    if (numColumns === 1) return containerWidth - pad * 2;
+    return Math.floor((containerWidth - pad * (numColumns + 1)) / numColumns);
+  }, [width, numColumns, isMobileScreen]);
 
   const renderItem = ({ item }: { item: (typeof projects)[number] }) => (
     <ProjectCard
@@ -147,115 +162,117 @@ export default function Library() {
 
   return (
     <View style={[styles.container, { backgroundColor: t.background }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.brand}>
-          <View style={[styles.brandIconWrap, { backgroundColor: t.primaryContainer }]}>
-            <Icon name="Box" size={24} color={t.onPrimaryContainer} strokeWidth={2.4} />
+      <View style={styles.mainWrapper}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.brand}>
+            <View style={[styles.brandIconWrap, { backgroundColor: t.primaryContainer }]}>
+              <Icon name="Boxes" size={24} color={t.onPrimaryContainer} strokeWidth={2.2} />
+            </View>
+            <View>
+              <Text style={[styles.brandName, { color: t.text }]}>ThreeKip</Text>
+              <Text style={[styles.brandTagline, { color: t.textMuted }]}>{tr.about.subtitle}</Text>
+            </View>
           </View>
-          <View>
-            <Text style={[styles.brandName, { color: t.text }]}>ThreeKip</Text>
-            <Text style={[styles.brandTagline, { color: t.textMuted }]}>{tr.about.subtitle}</Text>
-          </View>
-        </View>
-        <View style={styles.headerActions}>
-          <IconButton
-            name="Settings"
-            size={20}
-            btnSize={40}
-            variant="surface"
-            onPress={() => router.push('/settings')}
-          />
-        </View>
-      </View>
-
-      {/* Search + controls */}
-      <View style={styles.controls}>
-        <View style={[styles.searchBox, { backgroundColor: t.surfaceContainerHigh, borderColor: t.outlineVariant }]}>
-          <Icon name="Search" size={18} color={t.textMuted} />
-          <TextInput
-            style={[styles.searchInput, { color: t.text }]}
-            placeholder={tr.library.searchPlaceholder}
-            placeholderTextColor={t.textMuted}
-            value={query}
-            onChangeText={setQuery}
-          />
-          {query.length > 0 && (
-            <Pressable onPress={() => setQuery('')} hitSlop={8}>
-              <Icon name="X" size={16} color={t.textMuted} />
-            </Pressable>
-          )}
-        </View>
-        <View style={styles.controlBtns}>
-          <IconButton
-            name={sort === 'name' ? 'ArrowDownAZ' : 'Clock'}
-            size={18}
-            btnSize={42}
-            variant="surface"
-            onPress={() => setSort(sort === 'name' ? 'date' : 'name')}
-          />
-          <IconButton
-            name={viewMode === 'grid' ? 'List' : 'LayoutGrid'}
-            size={18}
-            btnSize={42}
-            variant="surface"
-            onPress={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-          />
-        </View>
-      </View>
-
-      {/* Filter chips */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.tabs}
-        contentContainerStyle={styles.tabsContent}
-      >
-        {filters.map((f) => {
-          const active = filter === f.key;
-          return (
-            <Chip
-              key={f.key}
-              label={f.label}
-              icon={f.icon}
-              active={active}
-              onPress={() => setFilter(f.key)}
+          <View style={styles.headerActions}>
+            <IconButton
+              name="Settings"
+              size={20}
+              btnSize={40}
+              variant="surface"
+              onPress={() => router.push('/settings')}
             />
-          );
-        })}
-      </ScrollView>
+          </View>
+        </View>
 
-      {/* Content */}
-      {filter === 'shared' ? (
-        <SharedList />
-      ) : visibleProjects.length === 0 ? (
-        <EmptyState filter={filter} onNew={onNew} onImport={onImport} />
-      ) : viewMode === 'grid' ? (
-        <FlatList
-          key="grid"
-          data={visibleProjects}
-          keyExtractor={(p) => p.id}
-          numColumns={2}
-          columnWrapperStyle={styles.gridRow}
-          contentContainerStyle={styles.listPad}
-          renderItem={renderItem}
-        />
-      ) : (
-        <FlatList
-          key="list"
-          data={visibleProjects}
-          keyExtractor={(p) => p.id}
-          contentContainerStyle={styles.listPad}
-          renderItem={renderItem}
-        />
-      )}
+        {/* Search + controls */}
+        <View style={styles.controls}>
+          <View style={[styles.searchBox, { backgroundColor: t.surfaceContainerHigh, borderColor: t.outlineVariant }]}>
+            <Icon name="Search" size={18} color={t.textMuted} />
+            <TextInput
+              style={[styles.searchInput, { color: t.text }]}
+              placeholder={tr.library.searchPlaceholder}
+              placeholderTextColor={t.textMuted}
+              value={query}
+              onChangeText={setQuery}
+            />
+            {query.length > 0 && (
+              <Pressable onPress={() => setQuery('')} hitSlop={8}>
+                <Icon name="X" size={16} color={t.textMuted} />
+              </Pressable>
+            )}
+          </View>
+          <View style={styles.controlBtns}>
+            <IconButton
+              name={sort === 'name' ? 'ArrowDownAZ' : 'Clock'}
+              size={18}
+              btnSize={42}
+              variant="surface"
+              onPress={() => setSort(sort === 'name' ? 'date' : 'name')}
+            />
+            <IconButton
+              name={viewMode === 'grid' ? 'List' : 'LayoutGrid'}
+              size={18}
+              btnSize={42}
+              variant="surface"
+              onPress={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+            />
+          </View>
+        </View>
+
+        {/* Filter chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabs}
+          contentContainerStyle={styles.tabsContent}
+        >
+          {filters.map((f) => {
+            const active = filter === f.key;
+            return (
+              <Chip
+                key={f.key}
+                label={f.label}
+                icon={f.icon}
+                active={active}
+                onPress={() => setFilter(f.key)}
+              />
+            );
+          })}
+        </ScrollView>
+
+        {/* Content */}
+        {filter === 'shared' ? (
+          <SharedList />
+        ) : visibleProjects.length === 0 ? (
+          <EmptyState filter={filter} onNew={onNew} onImport={onImport} />
+        ) : viewMode === 'grid' ? (
+          <FlatList
+            key={`grid-${numColumns}`}
+            data={visibleProjects}
+            keyExtractor={(p) => p.id}
+            numColumns={numColumns}
+            columnWrapperStyle={numColumns > 1 ? styles.gridRow : undefined}
+            contentContainerStyle={styles.listPad}
+            renderItem={renderItem}
+          />
+        ) : (
+          <FlatList
+            key="list"
+            data={visibleProjects}
+            keyExtractor={(p) => p.id}
+            contentContainerStyle={styles.listPad}
+            renderItem={renderItem}
+          />
+        )}
+      </View>
 
       {/* New project FAB (Material Design 3 Floating Action Button) */}
       <Pressable
         style={[styles.fab, { backgroundColor: t.primaryContainer, ...shadowsFor(t) }]}
         onPress={onNew}
       >
-        <Icon name="Plus" size={28} color={t.onPrimaryContainer} strokeWidth={2.6} />
+        <Icon name="Plus" size={32} color={t.onPrimaryContainer} strokeWidth={3} />
       </Pressable>
 
       {/* Options menu */}
@@ -364,7 +381,7 @@ function ProjectCard({
         onPress={onPress}
       >
         <View style={[styles.rowThumb, { backgroundColor: t.surfaceContainerHighest }]}>
-          <Icon name="Box" size={22} color={t.primary} strokeWidth={2.2} />
+          <Icon name="Box" size={24} color={t.primary} strokeWidth={2} />
         </View>
         <View style={styles.rowMain}>
           <Text style={[styles.cardName, { color: t.text }]} numberOfLines={1}>
@@ -391,7 +408,7 @@ function ProjectCard({
       onPress={onPress}
     >
       <View style={[styles.thumb, { backgroundColor: t.surfaceContainerHighest }]}>
-        <Icon name="Box" size={42} color={t.primary} strokeWidth={1.8} />
+        <Icon name="Box" size={48} color={t.primary} strokeWidth={1.5} />
         {item.favorite ? (
           <View style={[styles.favBadge, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant }]}>
             <Icon name="Star" size={13} color="#EAB308" fill="#EAB308" />
@@ -591,6 +608,12 @@ function shadowsFor(t: ReturnType<typeof useTheme>): ViewStyle {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  mainWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 1280,
+    alignSelf: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

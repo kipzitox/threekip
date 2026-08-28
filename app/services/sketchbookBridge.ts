@@ -28,6 +28,7 @@ type EventListener = (data: unknown) => void;
 
 export class SketchbookBridge {
   private handle: WebViewHandleLike | null = null;
+  private webRef: React.RefObject<WebViewHandleLike | any> | null = null;
   private pending = new Map<
     string,
     { resolve: (v: unknown) => void; reject: (e: Error) => void }
@@ -35,6 +36,10 @@ export class SketchbookBridge {
   private listeners = new Map<string, Set<EventListener>>();
   private seq = 0;
   private _ready = false;
+
+  setWebRef(ref: React.RefObject<WebViewHandleLike | any> | null): void {
+    this.webRef = ref;
+  }
 
   attach(handle: WebViewHandleLike | null): void {
     this.handle = handle;
@@ -46,6 +51,16 @@ export class SketchbookBridge {
   }
   isReady(): boolean {
     return this._ready;
+  }
+
+  getHandle(): WebViewHandleLike | null {
+    if (this.handle && typeof this.handle.postMessage === 'function') {
+      return this.handle;
+    }
+    if (this.webRef && this.webRef.current && typeof this.webRef.current.postMessage === 'function') {
+      return this.webRef.current;
+    }
+    return null;
   }
 
   handleMessage(raw: string): void {
@@ -80,7 +95,8 @@ export class SketchbookBridge {
   }
 
   send<T = unknown>(name: CommandName, payload?: Record<string, unknown>): Promise<T> {
-    if (!this.handle || !this.handle.postMessage) {
+    const handle = this.getHandle();
+    if (!handle || typeof handle.postMessage !== 'function') {
       return Promise.reject(new Error('WebView not attached'));
     }
     const id = `c${++this.seq}`;
@@ -90,7 +106,7 @@ export class SketchbookBridge {
         resolve: resolve as (v: unknown) => void,
         reject,
       });
-      this.handle!.postMessage!(JSON.stringify(message));
+      handle.postMessage!(JSON.stringify(message));
     });
   }
 
@@ -118,10 +134,12 @@ export function useSketchbookBridge(
   if (!bridgeRef.current) bridgeRef.current = new SketchbookBridge();
   const bridge = bridgeRef.current;
 
+  bridge.setWebRef(webRef);
+
   React.useEffect(() => {
+    bridge.setWebRef(webRef);
     if (webRef.current) bridge.attach(webRef.current);
-    return () => bridge.detach();
-  }, [bridge, webRef]);
+  });
 
   return bridge;
 }

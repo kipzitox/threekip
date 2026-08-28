@@ -440,7 +440,7 @@
     _fpsPlaneFill.renderOrder=7;
     _fpsPlaneGroup.add(_fpsPlaneFill);
     // Frosted depth-cue mesh
-    var bgHex=scene.background?('#'+scene.background.getHexString()):'#cdb899';
+    var bgHex=scene.background?('#'+scene.background.getHexString()):'#ffffff';
     var froMat=new THREE.MeshBasicMaterial({
       color:new THREE.Color(bgHex),
       transparent:true,opacity:_depthOpSteps[_depthOpIdx],

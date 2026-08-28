@@ -155,6 +155,9 @@
     var btn=document.getElementById('bdelloft');
     if(!btn)return;
     btn.addEventListener('click',function(){
+      if(!confirm('Are you sure you want to delete this loft surface? This will remove the generated 3D surface.')) {
+        return;
+      }
       if(window._clearLoft)window._clearLoft();
       _updateLoftDelBtn();
       toast('Loft deleted');

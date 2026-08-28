@@ -44,7 +44,7 @@ export function Icon({
   return <Cmp size={size} color={color ?? t.text} strokeWidth={strokeWidth} fill={fill} />;
 }
 
-type BtnVariant = 'primary' | 'secondary' | 'tonal' | 'elevated' | 'outlined' | 'ghost' | 'text';
+type BtnVariant = 'primary' | 'secondary' | 'tonal' | 'elevated' | 'outlined' | 'ghost' | 'text' | 'danger';
 export function Button({
   label,
   onPress,
@@ -70,6 +70,9 @@ export function Button({
   if (variant === 'primary') {
     bg = t.primary;
     fg = t.onPrimary;
+  } else if (variant === 'danger') {
+    bg = '#d93829';
+    fg = '#ffffff';
   } else if (variant === 'tonal' || variant === 'secondary') {
     bg = t.secondaryContainer;
     fg = t.onSecondaryContainer;
@@ -348,12 +351,15 @@ export function Sheet({
               <IconButton name="X" size={18} btnSize={36} variant="ghost" onPress={onClose} />
             </View>
           ) : (
-            <>
+            <View style={[styles.sheetHdrMobile, { borderBottomColor: t.divider }]}>
               <View style={styles.sheetHandleWrap}>
                 <View style={[styles.sheetHandle, { backgroundColor: t.outline }]} />
               </View>
-              {title ? <Text style={[styles.sheetTitle, { color: t.text }]}>{title}</Text> : null}
-            </>
+              <View style={styles.sheetTitleRowMobile}>
+                {title ? <Text style={[styles.sheetTitle, { color: t.text }]} numberOfLines={1}>{title}</Text> : <View />}
+                <IconButton name="X" size={18} btnSize={36} variant="ghost" onPress={onClose} />
+              </View>
+            </View>
           )}
           <ScrollView
             style={styles.sheetBody}
@@ -533,15 +539,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.15,
   },
-  sheetHandleWrap: { alignItems: 'center', paddingVertical: spacing.sm },
+  sheetHandleWrap: { alignItems: 'center', paddingTop: spacing.xs, paddingBottom: 2 },
   sheetHandle: { width: 32, height: 4, borderRadius: radius.full, opacity: 0.6 },
+  sheetHdrMobile: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.xs,
+    borderBottomWidth: 1,
+    marginBottom: spacing.xs,
+  },
+  sheetTitleRowMobile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: spacing.xs,
+  },
   sheetTitle: {
     fontSize: typography.title.fontSize,
     fontFamily: typography.title.fontFamily,
     fontWeight: '600',
     letterSpacing: 0.15,
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.md,
   },
   sheetBody: { flex: 1 },
   sheetBodyPad: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl },

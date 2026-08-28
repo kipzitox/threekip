@@ -60,10 +60,12 @@ function applyDetachedScale(el,scale){
   el.style.transformOrigin='top left';
 }
 
-// Position the stab at the inner edge of sidecol (accounts for zoom).
+// Position the stab at the inner edge of sidecol (accounts for zoom and responsive media query width).
 function positionStab(){
+  if (!stab || !sidecol) return;
   var isRight=document.body.classList.contains('rside');
-  var displayW=Math.round(176*_scState.scale);
+  var scRect=sidecol.getBoundingClientRect();
+  var displayW=(_scState.sideOpen && scRect.width > 0) ? Math.round(scRect.width) : Math.round(176*_scState.scale);
   var gap=2;
   var scOffset=5; // sidecol left/right offset from screen edge (--SP / --SR)
   var offset=_scState.sideOpen?(scOffset+displayW+gap):(scOffset+gap);

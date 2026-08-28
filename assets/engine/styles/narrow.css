@@ -119,16 +119,37 @@ body.ui-hidden #sc-fab{top:auto;right:auto;left:10px;bottom:94px}
 
 /* ── LAYERS TOPBAR POPOVER ── */
 #layers-pop{position:fixed;z-index:400;background:var(--pan);border:1px solid var(--bdr);
-  border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.1);padding:5px 4px;
-  display:none;flex-direction:column;gap:2px;min-width:140px;backdrop-filter:blur(12px)}
+  border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.08);padding:8px;
+  display:none;flex-direction:column;gap:5px;min-width:215px;max-width:250px;backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);animation:layersPopFadeIn .15s cubic-bezier(.16,1,.3,1)}
+@keyframes layersPopFadeIn{from{opacity:0;transform:translateY(-4px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 #layers-pop.open{display:flex}
-.tb-lrow{display:flex;align-items:center;gap:5px;padding:4px 6px;border-radius:6px;cursor:pointer;transition:background .08s}
-.tb-lrow:hover,.tb-lrow.hover{background:rgba(var(--ink-rgb),.06)}
-.tb-lrow.active{background:rgba(var(--ink-rgb),.1)}
-.tb-leye{width:22px;height:22px;border-radius:4px;border:none;background:transparent;
-  cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;color:var(--mut);-webkit-tap-highlight-color:transparent;transition:color .1s}
+.layers-pop-header{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 6px 6px;border-bottom:1px solid rgba(var(--ink-rgb),.08);margin-bottom:2px}
+.layers-pop-title{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--ink);text-transform:uppercase}
+.layers-pop-hint{font-size:8px;color:var(--mut);opacity:.75}
+.tb-lrow{display:flex;flex-direction:column;gap:5px;padding:6px 8px;border-radius:9px;cursor:pointer;border:1px solid transparent;background:transparent;transition:all .12s cubic-bezier(.16,1,.3,1);user-select:none}
+.tb-lrow:hover,.tb-lrow.hover{background:rgba(var(--ink-rgb),.05)}
+.tb-lrow.active{background:rgba(var(--ink-rgb),.08);border-color:rgba(var(--ink-rgb),.12);box-shadow:inset 2px 0 0 var(--md-primary,#6750A4)}
+.tb-lrow-main{display:flex;align-items:center;gap:6px;width:100%}
+.tb-lrow-sub{display:flex;align-items:center;gap:6px;padding-left:22px;padding-right:2px;width:100%}
+.tb-lgrip{display:flex;align-items:center;justify-content:center;color:var(--mut);opacity:.35;cursor:grab;transition:opacity .1s;flex-shrink:0}
+.tb-lrow:hover .tb-lgrip{opacity:.8}
+.tb-leye{width:24px;height:24px;border-radius:6px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--mut);transition:background .1s,color .1s;-webkit-tap-highlight-color:transparent}
+.tb-leye:hover{background:rgba(var(--ink-rgb),.08);color:var(--ink)}
 .tb-leye.vis{color:var(--ink)}
+.tb-leye.hidden-eye{color:var(--mut);opacity:.5}
+.ldot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 1.5px rgba(255,255,255,.8),0 1px 3px rgba(0,0,0,.2)}
+.lname{font-size:11px;font-weight:500;color:var(--ink);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.tb-lrow.active .lname{font-weight:600}
+.lopac-val{font-size:9px;font-family:'DM Mono',monospace;font-weight:600;color:var(--mut);background:rgba(var(--ink-rgb),.06);padding:1px 5px;border-radius:4px;min-width:32px;text-align:center;flex-shrink:0;transition:all .1s}
+.tb-lrow.active .lopac-val{color:var(--ink);background:rgba(var(--ink-rgb),.12)}
+.lopac-icon{color:var(--mut);opacity:.6;flex-shrink:0}
+.tb-lslider{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:rgba(var(--ink-rgb),.15);outline:none;cursor:pointer;transition:background .1s}
+.tb-lslider:hover{background:rgba(var(--ink-rgb),.25)}
+.tb-lslider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:12px;height:12px;border-radius:50%;background:var(--ink);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .1s}
+.tb-lslider::-webkit-slider-thumb:hover{transform:scale(1.25)}
+.tb-lslider::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--ink);border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .1s}
+.tb-lslider::-moz-range-thumb:hover{transform:scale(1.25)}
 /* ── BG COLOR POPOVER ── */
 #bgpop{position:fixed;z-index:400;background:var(--pan);border:1px solid var(--bdr);
   border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.1);padding:5px 6px;

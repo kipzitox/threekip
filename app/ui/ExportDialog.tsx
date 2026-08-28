@@ -27,10 +27,10 @@ export function ExportDialog({
   const formats: { id: ExportFormat; label: string; icon: string; desc: string }[] = [
     { id: 'png', label: tr.export.pngLabel, icon: 'Image', desc: tr.export.pngDesc },
     { id: 'glb', label: tr.export.glbLabel, icon: 'Box', desc: tr.export.glbDesc },
-    { id: 'obj', label: tr.export.objLabel, icon: 'Box', desc: tr.export.objDesc },
-    { id: 'usd', label: tr.export.usdLabel, icon: 'Box', desc: tr.export.usdDesc },
-    { id: 'usdz', label: tr.export.usdzLabel, icon: 'Box', desc: tr.export.usdzDesc },
-    { id: 'json', label: tr.export.jsonLabel, icon: 'FileText', desc: tr.export.jsonDesc },
+    { id: 'obj', label: tr.export.objLabel, icon: 'Shapes', desc: tr.export.objDesc },
+    { id: 'usd', label: tr.export.usdLabel, icon: 'Package', desc: tr.export.usdDesc },
+    { id: 'usdz', label: tr.export.usdzLabel, icon: 'Package', desc: tr.export.usdzDesc },
+    { id: 'json', label: tr.export.jsonLabel, icon: 'FileJson', desc: tr.export.jsonDesc },
   ];
 
   const handleExport = async (format: ExportFormat) => {

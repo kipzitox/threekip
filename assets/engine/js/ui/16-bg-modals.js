@@ -1,6 +1,6 @@
 // ── Background color ──────────────────────────────────────────────
-var BG_PRESETS={beige:'#cdb899',white:'#f5f0e8',black:'#1a1a2e'};
-var _curBgKey='beige';
+var BG_PRESETS={white:'#ffffff',cream:'#f5f0e8',black:'#1a1a2e'};
+var _curBgKey='white';
 function setBgColor(hex,key){
   var c=new THREE.Color(hex);
   scene.background=c;
@@ -33,8 +33,8 @@ function setBgColor(hex,key){
       pop.style.top=top+'px';pop.style.left=left+'px';
     }
   });
-  document.getElementById('bgpop-beige').addEventListener('click',function(){setBgColor('#cdb899','beige');});
-  document.getElementById('bgpop-white').addEventListener('click',function(){setBgColor('#f5f0e8','white');});
+  document.getElementById('bgpop-white').addEventListener('click',function(){setBgColor('#ffffff','white');});
+  document.getElementById('bgpop-cream').addEventListener('click',function(){setBgColor('#f5f0e8','cream');});
   document.getElementById('bgpop-black').addEventListener('click',function(){setBgColor('#1a1a2e','black');});
   var customInput=document.getElementById('bgpop-custom');
   if(customInput)customInput.addEventListener('input',function(){setBgColor(this.value,null);});
@@ -89,8 +89,8 @@ function newScene(){
   useOrtho=false;orthoZoom=8;
   document.querySelectorAll('#bpersp,#nav-persp,#pb-nav-persp').forEach(function(b){if(b)b.classList.remove('on');});
   updCam();
-  // Reset bg color to beige
-  setBgColor('#cdb899','beige');
+  // Reset bg color to white
+  setBgColor('#ffffff','white');
   // Reset brush to defaults: draw mode, size 1, opacity 95
   setMode('draw');
   if(window._applySize) window._applySize(1);

@@ -13,8 +13,8 @@ document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {
 
 const container=document.getElementById('cc');
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0xcdb899);
-scene.fog=new THREE.FogExp2(0xcdb899,.012);
+scene.background=new THREE.Color(0xffffff);
+scene.fog=new THREE.FogExp2(0xffffff,.012);
 const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.01,2000);
 let orthoZoom=8;
 const ortho=new THREE.OrthographicCamera(-orthoZoom,orthoZoom,orthoZoom,-orthoZoom,.01,2000);
@@ -23,7 +23,7 @@ function activeCam(){return useOrtho?ortho:camera;}
 const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
-renderer.setClearColor(0xcdb899,1);
+renderer.setClearColor(0xffffff,1);
 renderer.sortObjects=true;
 container.appendChild(renderer.domElement);
 
@@ -179,7 +179,7 @@ function buildSurf(){
   else if(surfType==='cylinder')fgeo=new THREE.CylinderGeometry(1.52,1.52,3.04,48);
   else if(surfType==='cone')fgeo=new THREE.ConeGeometry(1.52,3.04,48);
   else fgeo=new THREE.SphereGeometry(1.82,48,32);
-  var bgHex=scene.background?('#'+scene.background.getHexString()):'#cdb899';
+  var bgHex=scene.background?('#'+scene.background.getHexString()):'#ffffff';
   _frostedMat=new THREE.MeshBasicMaterial({
     color:new THREE.Color(bgHex),
     transparent:true,opacity:_depthOpSteps[_depthOpIdx],

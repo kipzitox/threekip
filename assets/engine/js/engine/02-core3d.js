@@ -105,7 +105,7 @@ function checkHover(px,py){
 
 // ── Depth system — frosted glass (v5.6) ──────────────────────────
 // Depth cue is now the _frostedMesh in surfGroup. No per-vertex recoloring.
-const BG_COL=new THREE.Color(0xcdb899);
+const BG_COL=new THREE.Color(0xffffff);
 function getDrawPlane(){const n=new THREE.Vector3(0,0,1).applyQuaternion(surfGroup.quaternion);return{n,d:n.dot(surfPos)};}
 function signedDist(pt,plane){return plane.n.dot(pt)-plane.d;}
 // Stubs kept for undo/redo references

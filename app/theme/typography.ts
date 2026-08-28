@@ -16,9 +16,11 @@ export const typography = {
   // M3 Display & Headlines
   displayLarge: { fontSize: 40, fontFamily: font.bold, lineHeight: 48, fontWeight: '700' as const, letterSpacing: -0.25 },
   display: { fontSize: 32, fontFamily: font.bold, lineHeight: 40, fontWeight: '700' as const, letterSpacing: -0.2 },
+  displayMedium: { fontSize: 32, fontFamily: font.bold, lineHeight: 40, fontWeight: '700' as const, letterSpacing: -0.2 },
   displaySmall: { fontSize: 28, fontFamily: font.bold, lineHeight: 36, fontWeight: '700' as const, letterSpacing: 0 },
   headlineLarge: { fontSize: 28, fontFamily: font.bold, lineHeight: 36, fontWeight: '700' as const, letterSpacing: 0 },
   headline: { fontSize: 24, fontFamily: font.bold, lineHeight: 32, fontWeight: '700' as const, letterSpacing: 0 },
+  headlineMedium: { fontSize: 24, fontFamily: font.bold, lineHeight: 32, fontWeight: '700' as const, letterSpacing: 0 },
   headlineSmall: { fontSize: 20, fontFamily: font.bold, lineHeight: 28, fontWeight: '700' as const, letterSpacing: 0 },
   titleLarge: { fontSize: 22, fontFamily: font.semi, lineHeight: 28, fontWeight: '600' as const, letterSpacing: 0 },
   title: { fontSize: 20, fontFamily: font.semi, lineHeight: 28, fontWeight: '600' as const, letterSpacing: 0.15 },
