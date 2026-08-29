@@ -60,7 +60,7 @@ export default function Settings() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.innerWrapper}>
           <View style={styles.pageHeader}>
-            <Text style={[styles.pageTitle, { color: t.text }]}>{tr.library.settings}</Text>
+            <Text style={[styles.pageTitle, { color: t.text }]}>{tr.settings.title}</Text>
           </View>
 
           <SectionTitle>{tr.settings.languageSection}</SectionTitle>

@@ -113,14 +113,18 @@ const WebIframeView = forwardRef<AppWebViewHandle, AppWebViewProps>((props, ref)
   );
 });
 
-let ExportedWebView: any;
+type AppWebViewComponent = React.ForwardRefExoticComponent<
+  AppWebViewProps & React.RefAttributes<AppWebViewHandle>
+>;
+
+let ExportedWebView: AppWebViewComponent;
 
 if (Platform.OS === 'web') {
   ExportedWebView = WebIframeView;
 } else {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { WebView } = require('react-native-webview');
-  ExportedWebView = WebView;
+  ExportedWebView = WebView as unknown as AppWebViewComponent;
 }
 
 export const AppWebView = ExportedWebView;

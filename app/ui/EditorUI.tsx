@@ -530,7 +530,7 @@ export function EditorUI({
             <Text style={[styles.confirmTitle, { color: t.text }]}>
               {tr.editor.clearConfirmTitle}
             </Text>
-            <Text style={[styles.confirmMessage, { color: t.subtext }]}>
+            <Text style={[styles.confirmMessage, { color: t.textMuted }]}>
               {tr.editor.clearConfirmMessage}
             </Text>
             <View style={styles.confirmActionsRow}>
@@ -883,5 +883,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     width: '100%',
+  },
+  topSegment: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    padding: spacing.xs,
+  },
+  topSegmentTablet: {
+    gap: spacing.xs,
+  },
+  projBadge: {
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.full,
+    maxWidth: 180,
+    flexShrink: 1,
+  },
+  bottomBarWrap: {
+    position: 'absolute',
+    bottom: spacing.lg,
+    left: spacing.md,
+    right: spacing.md,
+    alignItems: 'center',
+  },
+  bottomBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    padding: spacing.xs,
+    paddingHorizontal: spacing.sm,
+  },
+  bottomBarSmall: {
+    padding: 2,
+    gap: spacing.xs,
+  },
+  toolGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  sideBar: {
+    position: 'absolute',
+    top: 84,
+    left: spacing.md,
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: spacing.xs,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    padding: spacing.xs,
+  },
+  divH: {
+    height: 1,
+    width: 22,
+    marginVertical: 4,
+    opacity: 0.7,
   },
 });
