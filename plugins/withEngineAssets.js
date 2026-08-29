@@ -15,19 +15,23 @@ const path = require('path');
 const { withDangerousMod } = require('expo/config-plugins');
 
 function copyRecursive(src, dest) {
-  fs.mkdirSync(dest, { recursive: true });
-  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
-    const s = path.join(src, entry.name);
-    const d = path.join(dest, entry.name);
-    if (entry.isDirectory()) copyRecursive(s, d);
-    else fs.copyFileSync(s, d);
+  try {
+    fs.mkdirSync(dest, { recursive: true });
+    for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+      const s = path.join(src, entry.name);
+      const d = path.join(dest, entry.name);
+      if (entry.isDirectory()) copyRecursive(s, d);
+      else fs.copyFileSync(s, d);
+    }
+  } catch (e) {
+    throw e;
   }
 }
 
 function withEngineAssets(config) {
   const engineSrc = path.join(__dirname, '..', 'assets', 'engine');
 
-  config = withDangerousMod(config, 'android', async (c) => {
+  config = withDangerousMod(config, 'android', (c) => {
     const dest = path.join(
       c.modRequest.projectRoot,
       'android',

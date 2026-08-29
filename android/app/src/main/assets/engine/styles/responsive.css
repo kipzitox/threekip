@@ -1,0 +1,150 @@
+/* ── Media Queries for Mobile & Small Screen Responsiveness (< 768px) ── */
+
+@media screen and (max-width: 768px) {
+  /* 1. Side column width adjustment & collapse behavior */
+  #sidecol {
+    width: min(156px, 36vw);
+    top: 48px;
+    bottom: 56px;
+    gap: 4px;
+    will-change: transform, opacity;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Ensure sidecol collapsed state translates cleanly out of view so canvas drawing area is 100% accessible */
+  #sidecol.collapsed {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateX(-110%) !important;
+  }
+
+  body.rside #sidecol.collapsed {
+    transform: translateX(110%) !important;
+  }
+
+  /* 2. Sidecol Groups & Detached Panels */
+  .sc-group {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  }
+
+  .sc-group.detached {
+    max-width: min(150px, 40vw);
+    max-height: 52vh;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+    will-change: transform, opacity, left, top;
+  }
+
+  .sc-grab {
+    padding: 6px 4px;
+    min-height: 28px;
+  }
+
+  .sc-title {
+    font-size: 6.5px;
+  }
+
+  /* 3. Side Toggle Tab (#stab) touch accessibility */
+  #stab {
+    width: 18px;
+    height: 38px;
+    border-radius: 8px;
+    will-change: left, right, transform;
+  }
+
+  #stab span {
+    width: 3px;
+    height: 18px;
+    opacity: 0.5;
+  }
+
+  /* 4. Mobile Narrow Bar & Float Cards */
+  #narrow-bar {
+    max-height: 42vh;
+  }
+
+  #pb-panels {
+    padding: 3px 4px;
+    gap: 3px;
+  }
+
+  .pb-panel {
+    max-height: 32vh;
+    border-radius: 8px;
+  }
+
+  #pb-float-card {
+    max-width: min(340px, 94vw);
+    max-height: 36vh;
+    will-change: transform, opacity;
+  }
+
+  #pb-float-card.fc-docked-bottom {
+    bottom: var(--pb-h, 160px) !important;
+  }
+
+  /* 5. Drawing Canvas & Viewport accessibility */
+  #cc, #c, canvas {
+    touch-action: none;
+  }
+
+  /* Status Bar positioning on mobile */
+  #sbar {
+    bottom: 6px;
+    font-size: 7px;
+    padding: 2px 8px;
+  }
+
+  /* Top right UI hide button */
+  #bhide {
+    top: 6px;
+    right: 6px;
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/* ── Compact Smartphone Viewports (< 480px) ── */
+@media screen and (max-width: 480px) {
+  #sidecol {
+    width: min(144px, 42vw);
+    top: 44px;
+    bottom: 48px;
+  }
+
+  .cyc-btn {
+    height: 26px;
+    font-size: 6px;
+  }
+
+  .btn-pill {
+    height: 26px;
+    padding: 0 5px;
+    font-size: 6.5px;
+  }
+
+  .lbtn {
+    height: 20px;
+    font-size: 6px;
+  }
+
+  .sc-title {
+    font-size: 6px;
+  }
+
+  #pb-float-card {
+    max-width: 96vw;
+    max-height: 34vh;
+  }
+
+  .pb-panel {
+    max-height: 28vh;
+  }
+}
+
+@media (max-aspect-ratio: 1/2) {
+  #sbar {
+    bottom: 4px;
+  }
+}
+

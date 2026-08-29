@@ -1,10 +1,11 @@
 {
   "expo": {
     "name": "ThreeKip",
-    "slug": "sketchbook-mobile",
+    "slug": "threekip",
     "version": "1.0.0",
+    
     "orientation": "default",
-    "scheme": "sketchbook",
+    "scheme": "threekip",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "icon": "./assets/engine/icon-512.png",
@@ -19,14 +20,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sketchbook.mobile"
+      "bundleIdentifier": "com.threekip.app"
     },
     "android": {
-      "package": "com.sketchbook.mobile",
-      "navigationBar": {
-        "backgroundColor": "#ffffff",
-        "visible": true
-      },
+      "package": "com.threekip.app",
       "softwareKeyboardLayoutMode": "pan",
       "permissions": [],
       "adaptiveIcon": {
@@ -34,6 +31,26 @@
         "backgroundColor": "#ffffff"
       }
     },
-    "plugins": ["expo-router", "./plugins/withEngineAssets.js"]
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/engine/icon-512.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ],
+      "./plugins/withEngineAssets.js"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "2d5925be-53b9-4a9d-8cc4-bf3738b0e722"
+      }
+    }
   }
 }

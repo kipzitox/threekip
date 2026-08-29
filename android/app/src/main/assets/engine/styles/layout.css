@@ -1,0 +1,233 @@
+/* ── TOPBAR (hidden — ThreeKip uses React Native app bar) ── */
+#topbar{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;position:absolute!important;left:-9999px!important;top:-9999px!important;height:0!important;width:0!important;overflow:hidden!important;}
+.tsep{width:1px;height:16px;background:var(--bdr);margin:0 3px;flex-shrink:0}
+
+/* ── HIDE-UI BUTTON (top-right, always visible) ── */
+#bhide{position:fixed;top:8px;right:8px;z-index:300;width:32px;height:32px;border-radius:8px}
+
+/* ── SIDE COLUMN ── */
+:root{--SP:10px;--SR:auto}
+body.rside{--SP:auto;--SR:10px}
+#sidecol{position:fixed;left:var(--SP);right:var(--SR);top:52px;bottom:64px;z-index:200;
+  display:flex;flex-direction:column-reverse;gap:6px;align-items:stretch;
+  width:176px;overflow-y:auto;overflow-x:visible;
+  scrollbar-width:none;transition:opacity .15s,transform .15s}
+#sidecol::-webkit-scrollbar{display:none}
+#sidecol.collapsed{opacity:0;pointer-events:none;transform:translateX(-12px)}
+body.rside #sidecol.collapsed{transform:translateX(12px)}
+
+/* Grouped cards — two unified cards in sidecol.
+   Each group gets the card look; inner children drop their own card chrome
+   but keep separators between siblings. */
+.sc-group{background:var(--pan);border:1px solid var(--bdr);border-radius:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,.07);backdrop-filter:blur(12px);
+  display:flex;flex-direction:column-reverse;overflow:hidden;flex-shrink:0;position:relative}
+.sc-group > .card{background:transparent;border:none;box-shadow:none;border-radius:0;backdrop-filter:none}
+/* Separators between stacked children (not between groups) */
+.sc-group > .card + .card{border-bottom:1px solid var(--bdr)}
+/* column-reverse means "+ .card" is visually above, so border-bottom draws between them visually */
+
+/* When one group is detached, the remaining group must keep its original position.
+   In column-reverse flex, default packing is flex-start = visual bottom. Without these
+   rules, removing sg-bottom would cause sg-top to drop to the visual bottom. */
+#sidecol.no-bottom #sg-top{margin-bottom:auto}  /* push sg-top up → visual top */
+#sidecol.no-top #sg-bottom{margin-bottom:0}      /* sg-bottom stays at default (visual bottom) */
+
+/* Top grab handle on each sc-group */
+.sc-grab{display:flex;align-items:center;justify-content:center;
+  padding:8px 6px;min-height:32px;cursor:grab;flex-shrink:0;
+  background:rgba(var(--ink-rgb),.03);border-bottom:1px solid var(--bdr);
+  -webkit-tap-highlight-color:transparent;touch-action:none;
+  order:999;position:relative}
+.sc-grab:active{cursor:grabbing}
+.sc-grab::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:28px;height:3px;border-radius:2px;
+  background:var(--bdr);transition:background .1s;pointer-events:none}
+.sc-grab:hover::before,.sc-grab:active::before{background:var(--mut)}
+/* Spacer pushes buttons to the right */
+.sc-grab-spacer{flex:1}
+/* Card title — sits at far-left of grab handle, non-interactive so it never
+   blocks drag. Muted type, consistent with cyc-btn aesthetic. */
+.sc-title{font-size:7px;letter-spacing:.12em;color:var(--mut);
+  font-weight:600;pointer-events:none;flex-shrink:0;
+  font-family:'DM Mono',monospace;line-height:1;
+  text-transform:uppercase;padding-left:2px}
+
+/* Detached (floating) sc-group */
+.sc-group.detached{position:fixed;z-index:260;width:176px;
+  box-shadow:0 8px 32px rgba(0,0,0,.28),0 2px 8px rgba(0,0,0,.12);overflow:visible}
+.sc-group.detached .sc-grab{cursor:grab}
+
+/* Close button (hide) — appears when detached, sits inside sc-grab */
+.sc-close{display:none;flex-shrink:0;margin-left:3px;
+  width:18px;height:18px;border-radius:4px;border:none;
+  background:transparent;color:var(--mut);font-size:11px;cursor:pointer;
+  align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;
+  font-family:'DM Mono',monospace;line-height:1}
+.sc-group.detached .sc-close{display:flex}
+.sc-close:active{background:rgba(var(--ink-rgb),.1);color:var(--ink)}
+/* Dock button — appears when detached */
+.sc-dock{display:none;flex-shrink:0;margin-left:3px;
+  width:18px;height:18px;border-radius:4px;border:none;
+  background:transparent;color:var(--mut);font-size:11px;cursor:pointer;
+  align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;
+  font-family:'DM Mono',monospace;line-height:1}
+.sc-group.detached .sc-dock{display:flex}
+.sc-dock:active{background:rgba(var(--ink-rgb),.1);color:var(--ink)}
+
+/* Right-edge resize strip — anchored to bottom-right of detached cards.
+   Sits in the lower portion of the right edge so it's clearly a resize
+   handle (not a scroll target). Large touch target, no corner hunting. */
+.scale-dot{display:none;position:absolute;z-index:4;
+  bottom:0;right:-6px;width:12px;height:48px;
+  cursor:ew-resize;touch-action:none;-webkit-tap-highlight-color:transparent;
+  border-radius:0 0 10px 0}
+.scale-dot::after{content:'';position:absolute;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  width:3px;height:14px;border-radius:2px;
+  background:var(--bdr)}
+.scale-dot:hover::after,.scale-dot.dragging::after{background:var(--mut)}
+.sc-group.detached .scale-dot,#pb-float-card .scale-dot{display:block}
+/* corner-br/bl: no-ops kept for compat */
+.scale-dot.corner-br,.scale-dot.corner-bl{}
+
+/* Dock-snap-ready hint — highlights a detached card when it's within redock range */
+.sc-group.detached.dock-snap-ready{outline:2px solid var(--ink);outline-offset:2px}
+
+/* UI hidden mode */
+body.ui-hidden #topbar,body.ui-hidden #sidecol,body.ui-hidden #stab,
+body.ui-hidden #sbar,body.ui-hidden #pages,body.ui-hidden #views,
+body.ui-hidden #narrow-bar,body.ui-hidden #selbadge,body.ui-hidden #sgizmo{display:none!important}
+body.ui-hidden #bhide{opacity:.25}
+body.ui-hidden #bhide:hover{opacity:1}
+/* Detached tools card (sg-top) is redundant with ≡ bar when UI is hidden — hide it */
+body.ui-hidden.sc-detached #sg-top{display:none!important}
+/* Float card visible when UI hidden (narrow + tablet), never docked */
+body.ui-hidden #pb-float-card.fc-visible{display:flex}
+body.ui-hidden #pb-float-card.fc-docked-bottom{
+  left:8px!important;right:auto!important;bottom:auto!important;top:52px!important;
+  border-radius:12px!important;border-bottom:1px solid var(--bdr)!important;
+  width:auto!important;box-shadow:0 4px 20px rgba(0,0,0,.22)!important}
+body.ui-hidden #pb-float-card.fc-docked-bottom #fc-resize{display:flex}
+body.ui-hidden #pb-float-card.fc-docked-bottom #fc-dock-btn{border-color:transparent;opacity:1}
+/* FAB still works when UI hidden */
+body.ui-hidden #pb-fab.fab-visible{display:flex}
+
+/* ── Hidden-UI mini-toolbar (v14.2, updated v28) ──
+   Appears when UI is hidden in ALL modes (including narrow-mode).
+   Toggle button at bottom-left; bar centered at bottom, hidden by default.      */
+#sc-hidden-toggle{display:none;position:fixed;z-index:300;left:10px;bottom:10px;
+  width:32px;height:32px;border-radius:8px;
+  background:var(--pan);border:1px solid var(--bdr);color:var(--ink);
+  box-shadow:0 2px 8px rgba(0,0,0,.14);backdrop-filter:blur(12px);
+  cursor:pointer;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;padding:0;transition:bottom .2s ease}
+#sc-hidden-toggle svg{display:block}
+#sc-hidden-toggle.lit{border-color:var(--ink);opacity:.85}
+body.ui-hidden #sc-hidden-toggle{display:flex}
+
+#sc-hidden-bar{display:none;position:fixed;z-index:299;left:50%;bottom:10px;
+  transform:translateX(-50%);
+  background:var(--pan);border:1px solid var(--bdr);border-radius:10px;
+  box-shadow:0 4px 20px rgba(0,0,0,.18);backdrop-filter:blur(12px);
+  padding:5px 7px;gap:4px;align-items:center;
+  flex-wrap:nowrap;max-width:calc(100vw - 80px);overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;touch-action:pan-x;
+  -webkit-tap-highlight-color:transparent}
+#sc-hidden-bar::-webkit-scrollbar{display:none}
+body.ui-hidden #sc-hidden-bar.scx-open{display:flex}
+
+/* ── Strip-open shift: bump bottom controls above open strips ── */
+body.views-open #sc-hidden-toggle{bottom:76px}
+body.views-open #sc-hidden-bar{bottom:76px}
+body.views-open #sbar{bottom:76px}
+body.views-open:not(.narrow-mode) #sidecol{bottom:134px}
+body.views-open.ui-hidden #lcl-float-group{bottom:118px!important}
+body.views-open.ui-hidden #sc-fab{bottom:160px!important}
+body.pages-open.views-open #sc-hidden-toggle{bottom:140px}
+body.pages-open.views-open #sc-hidden-bar{bottom:140px}
+body.pages-open.views-open #sbar{bottom:140px}
+body.pages-open.views-open:not(.narrow-mode) #sidecol{bottom:196px}
+body.pages-open.views-open.ui-hidden #lcl-float-group{bottom:182px!important}
+body.pages-open.views-open.ui-hidden #sc-fab{bottom:224px!important}
+body.pages-open:not(.views-open) #sc-hidden-toggle{bottom:76px}
+body.pages-open:not(.views-open) #sc-hidden-bar{bottom:76px}
+body.pages-open:not(.views-open) #sbar{bottom:76px}
+body.pages-open:not(.views-open):not(.narrow-mode) #sidecol{bottom:134px}
+body.pages-open:not(.views-open).ui-hidden #lcl-float-group{bottom:118px!important}
+body.pages-open:not(.views-open).ui-hidden #sc-fab{bottom:160px!important}
+#sc-hidden-bar .scx-sep{width:1px;height:18px;background:var(--bdr);flex-shrink:0;margin:0 1px}
+#sc-hidden-bar .btn-md{flex-shrink:0}
+#sc-hidden-bar .cw{width:22px;height:22px;flex-shrink:0}
+#sc-hidden-bar .bprev-btn{width:26px;height:30px;flex-shrink:0;flex-direction:column;gap:1px}
+
+/* ── FPS Nav Overlay ── */
+#fps-overlay{display:none;position:fixed;inset:0;z-index:250;pointer-events:none}
+body.fps-active #fps-overlay{display:block}
+#fps-joy-look{position:fixed;bottom:24px;right:24px;z-index:251;width:130px;height:130px;pointer-events:auto}
+#fps-joy-look canvas{display:block;width:130px;height:130px;cursor:grab;border-radius:50%}
+#fps-joy-look-label{position:absolute;top:-14px;left:50%;transform:translateX(-50%);color:var(--mut);font-size:7px;letter-spacing:.1em;pointer-events:none}
+#fps-crosshair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:249;width:20px;height:20px;pointer-events:none;opacity:.35;display:none}
+body.fps-active #fps-crosshair{display:block}
+#fps-crosshair svg{width:100%;height:100%}
+/* FPS exit: now lives inside #fps-plane-ctrl as last child */
+#fps-exit{height:28px;padding:0 10px;border-radius:6px;border:1px solid var(--bdr);
+  background:transparent;color:var(--ink);font-family:'DM Mono',monospace;font-size:7px;
+  letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:4px;width:100%;margin-top:2px}
+#fps-exit:active{background:rgba(var(--ink-rgb),.12)}
+#fps-vt-card button.held,#fps-vt-card button:active{background:rgba(var(--ink-rgb),.15);border-color:rgba(var(--ink-rgb),.3)}
+/* Item 4: in narrow/tall mode, lift right joystick above narrow bar */
+body.narrow-mode.fps-active #fps-joy-look{bottom:calc(var(--pb-h,220px) + 16px)}
+body.ui-hidden.fps-active #fps-joy-look{bottom:24px}
+/* Item 5: in ui-hidden FPS, move joystick floats bottom-left alongside look joystick */
+body.ui-hidden.fps-active #fps-move-card{
+  display:flex!important;position:fixed;bottom:24px;left:24px;z-index:251;
+  background:transparent;border:none}
+body.ui-hidden.fps-active #fps-move-card canvas{width:130px;height:130px;aspect-ratio:auto}
+body.ui-hidden.fps-active #fps-move-card #fps-vt-card{display:none}
+body.ui-hidden.fps-active #pb-fps-move-card{
+  display:flex!important;position:fixed;bottom:calc(var(--pb-h,0px) + 24px);left:24px;z-index:251;
+  background:transparent;border:none}
+/* FPS plane ctrl: under #bhide (eye), holds toggle + sliders + exit */
+#fps-plane-ctrl{position:fixed;top:48px;right:8px;z-index:251;
+  display:none;flex-direction:column;align-items:stretch;gap:6px;pointer-events:auto;
+  background:var(--pan);border:1px solid var(--bdr);border-radius:8px;padding:8px 10px;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);min-width:130px}
+body.fps-active #fps-plane-ctrl{display:flex}
+body.fps-active #sc-fab{display:none!important}
+#fps-plane-toggle{height:28px;padding:0 8px;border-radius:6px;border:1px solid var(--bdr);
+  background:transparent;color:var(--ink);font-family:'DM Mono',monospace;font-size:7px;
+  letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;gap:3px;white-space:nowrap;width:100%}
+#fps-plane-toggle.on{background:var(--acc,#6c6);border-color:var(--acc,#6c6);color:#fff}
+#fps-plane-dist-wrap{display:none;flex-direction:column;gap:10px}
+#fps-plane-toggle.on ~ #fps-plane-dist-wrap{display:flex}
+.fps-slider-row{display:flex;align-items:center;gap:6px;padding:2px 0}
+.fps-slider-label{font-family:'DM Mono',monospace;font-size:6.5px;color:var(--mut);white-space:nowrap;width:24px}
+.fps-slider{-webkit-appearance:none;flex:1;height:4px;background:var(--bdr);border-radius:2px;outline:none;cursor:pointer}
+.fps-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--ink);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.fps-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--ink);border:2px solid #fff}
+
+/* Hide stab entirely when sidecol is fully undocked — no column to toggle */
+body.sc-detached #stab{display:none!important}
+
+/* Side toggle tab — pill-shaped, tap=collapse, horizontal drag=scale sidecol */
+#stab{position:fixed;z-index:200;cursor:grab;background:var(--pan);
+  border:1px solid var(--bdr);border-radius:10px;padding:4px 3px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);-webkit-tap-highlight-color:transparent;
+  touch-action:none;user-select:none;-webkit-user-select:none;height:32px;width:14px}
+#stab:active{cursor:grabbing}
+body.rside #stab{border-radius:10px;right:0;left:auto}
+#stab span{display:block;width:3px;height:16px;background:var(--ink);opacity:.3;border-radius:2px;transition:opacity .1s}
+#stab:hover span,#stab:active span{opacity:.6}
+#stab.resizing{background:rgba(var(--ink-rgb),.1)}
+#stab.resizing span{opacity:.85}
+
+/* Side-switch button in status bar (bottom right of sbar) */
+#sb-sideswitch{background:transparent;border:1px solid transparent;border-radius:4px;
+  color:var(--mut);cursor:pointer;font-family:'DM Mono',monospace;font-size:7.5px;
+  padding:1px 5px;margin-left:6px;letter-spacing:.05em;pointer-events:auto;
+  -webkit-tap-highlight-color:transparent;transition:background .1s,color .1s,border-color .1s}
+#sb-sideswitch:hover{background:rgba(var(--ink-rgb),.08);color:var(--ink);border-color:rgba(var(--ink-rgb),.15)}
+#sb-sideswitch:active{background:rgba(var(--ink-rgb),.14)}

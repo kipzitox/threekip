@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'Sketchbook Mobile'
+rootProject.name = 'ThreeKip'
 
 dependencyResolutionManagement {
   versionCatalogs {

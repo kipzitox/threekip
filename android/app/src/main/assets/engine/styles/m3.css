@@ -1,0 +1,63 @@
+/* ── Material Design 3 component polish ── (load last) */
+
+/* Shape: buttons */
+.btn{border-radius:var(--shp-sm)}
+.btn-sm{border-radius:var(--shp-sm)}
+.btn-md{border-radius:var(--shp-sm)}
+.btn-pill{border-radius:var(--shp-full)}
+.btn-sft{border-radius:var(--shp-sm)}
+
+/* Shape + elevation: surfaces */
+.card{border-radius:var(--shp-lg);box-shadow:var(--elev-1)}
+.sc-group{border-radius:var(--shp-lg);box-shadow:var(--elev-1)}
+.sc-group.detached{box-shadow:var(--elev-3)}
+#topbar{display:none!important}
+#stab{box-shadow:var(--elev-1);border-radius:var(--shp-md)}
+#bhide,#bviews-hidden,#sc-hidden-toggle{border-radius:var(--shp-sm)}
+#sc-hidden-bar{border-radius:var(--shp-full);box-shadow:var(--elev-2)}
+#sbar{box-shadow:var(--elev-1)}
+#pg-add,#vw-add{border-radius:var(--shp-sm)}
+.pg-thumb,.vw-thumb{border-radius:var(--shp-sm)}
+#navcube,#gc{border-radius:var(--shp-sm)}
+.cw,#ccpick,.bgpop-swatch,#bgpop-pick{border-radius:var(--shp-sm)}
+.leye{border-radius:var(--shp-xs)}
+.lbtn{border-radius:var(--shp-sm)}
+.cyc-btn{border-radius:var(--shp-sm)}
+.tb-lrow{border-radius:var(--shp-sm)}
+.emb,.cyc-pop-item{border-radius:var(--shp-xs)}
+.fc-hdr-btn{border-radius:var(--shp-xs)}
+#fps-plane-ctrl{border-radius:var(--shp-md)}
+#fps-exit,#fps-plane-toggle{border-radius:var(--shp-sm)}
+#sb-sideswitch{border-radius:var(--shp-xs)}
+.sc-close,.sc-dock{border-radius:var(--shp-xs)}
+
+/* Popovers / menus — floating sheets */
+#expmenu,#layers-pop,#bgpop,.cyc-pop,.brush-pop{border-radius:var(--shp-md);box-shadow:var(--elev-3)}
+#sgizmo{border-radius:var(--shp-lg);box-shadow:var(--elev-3)}
+
+/* FABs — filled primary-container squircle */
+#pb-fab,#sc-fab{border-radius:var(--shp-lg);background:var(--md-primary-container);color:var(--md-on-primary-container);border:none;box-shadow:var(--elev-2)}
+
+/* Selected / active states use M3 containers */
+.btn.on.mode{background:var(--md-primary-container);color:var(--md-on-primary-container);border-color:transparent}
+.btn.on.mode::before{background:var(--md-primary)}
+.cyc-btn.on{background:var(--md-secondary-container);color:var(--md-on-secondary-container);border-color:transparent}
+.lbtn.active,.tb-lrow.active{background:var(--md-secondary-container);color:var(--md-on-secondary-container);border-color:transparent}
+
+/* Dialogs — M3 dialog shape (extra-large) + scrim */
+#new-scene-modal,#save-name-modal,#export-name-modal,#restore-modal{background:var(--md-scrim)}
+.nsm-box{border-radius:var(--shp-xl);box-shadow:var(--elev-3);border:none;background:var(--md-surface)}
+
+/* Float card + strips — rounded sheets */
+#pb-float-card{border-radius:var(--shp-lg)}
+#pb-float-card.fc-docked-bottom{border-radius:var(--shp-lg) var(--shp-lg) 0 0}
+#pages,#views{border-radius:var(--shp-lg) var(--shp-lg) 0 0}
+
+/* Snackbar (toast) + recording stop pill */
+#toast{background:var(--md-inverse-surface);color:var(--md-inverse-on-surface);box-shadow:var(--elev-3);border-radius:var(--shp-full)}
+#rec-stop-btn{background:var(--md-error-container);color:var(--md-on-error-container);border-color:transparent}
+
+/* Sliders — M3 track + primary thumb */
+.fps-slider,input[type=range].vr,.brush-slider-row input[type=range],#pb-colors input[type=range]{background:var(--md-outline-variant)}
+.fps-slider::-webkit-slider-thumb,input[type=range].vr::-webkit-slider-thumb,.brush-slider-row input[type=range]::-webkit-slider-thumb,#pb-colors input[type=range]::-webkit-slider-thumb{background:var(--md-primary);border-color:var(--md-on-primary)}
+.fps-slider::-moz-range-thumb,input[type=range].vr::-moz-range-thumb,.brush-slider-row input[type=range]::-moz-range-thumb,#pb-colors input[type=range]::-moz-range-thumb{background:var(--md-primary);border-color:var(--md-on-primary)}
