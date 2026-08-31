@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, Pressable, ScrollView, Switch, StyleSheet, Alert, Animated, Easing, Platform, Modal, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import type { SketchbookBridge, WebViewHandleLike } from '../services/sketchbookBridge';
@@ -178,7 +178,7 @@ export function EditorUI({
     return () => offs.forEach((f) => f());
   }, [bridge]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleBack = async () => {
+  const handleBack = useCallback(async () => {
     const leave = async () => {
       await onSave(false).catch(() => {});
       router.back();
@@ -191,12 +191,12 @@ export function EditorUI({
     } else {
       await leave();
     }
-  };
+  }, [confirmExit, onSave, tr]);
 
   // Drive the engine's own buttons (kept in the DOM, just hidden by our CSS) so
   // we don't reimplement editor functions outside the allowed RN-only scope.
   // We evaluate selectors in priority order and click the first matching element.
-  const clickEngine = (sel: string) => {
+  const clickEngine = useCallback((sel: string) => {
     webRef.current?.injectJavaScript(
       `(function(){
         var parts = '${sel}'.split(',');
@@ -210,38 +210,38 @@ export function EditorUI({
         }
       })()`
     );
-  };
+  }, [webRef]);
 
-  const toggleEngine = (sel: string, setter: React.Dispatch<React.SetStateAction<boolean>>) => {
+  const toggleEngine = useCallback((sel: string, setter: React.Dispatch<React.SetStateAction<boolean>>) => {
     clickEngine(sel);
     setter((p) => !p);
-  };
+  }, [clickEngine]);
 
-  const handleSetTool = (tool: 'draw' | 'erase' | 'select') => {
+  const handleSetTool = useCallback((tool: 'draw' | 'erase' | 'select') => {
     setActiveTool(tool);
     if (tool === 'draw') clickEngine('#sdraw');
     else if (tool === 'erase') clickEngine('#serase');
     else if (tool === 'select') clickEngine('#sselect');
     showToast(tool === 'draw' ? tr.editor.toasts.drawing : tool === 'erase' ? tr.editor.toasts.erasing : tr.editor.toasts.selecting);
-  };
+  }, [clickEngine, showToast, tr]);
 
-  const handleUndo = async () => {
+  const handleUndo = useCallback(async () => {
     try {
       await bridge.send('undo');
     } catch {
       clickEngine('#bundo, #s-undo, #pb-undo');
     }
     showToast(tr.editor.toasts.undo);
-  };
+  }, [bridge, clickEngine, showToast, tr]);
 
-  const handleRedo = async () => {
+  const handleRedo = useCallback(async () => {
     try {
       await bridge.send('redo');
     } catch {
       clickEngine('#bredo, #s-redo, #pb-redo');
     }
     showToast(tr.editor.toasts.redo);
-  };
+  }, [bridge, clickEngine, showToast, tr]);
 
   // Physical/Hardware keyboard shortcuts on tablets & web
   useEffect(() => {
@@ -289,16 +289,17 @@ export function EditorUI({
       <Animated.View
         pointerEvents="box-none"
         style={[
-          styles.topBar,
-          isTablet && styles.topBarTablet,
+          styles.topBarWrap,
+          isTablet && styles.topBarWrapTablet,
           {
             opacity: appear,
             transform: [{ translateY: appear.interpolate({ inputRange: [0, 1], outputRange: [-8, 0] }) }],
           },
         ]}
       >
-        {/* Left Section: Back Button + Project Title Badge */}
-        <View pointerEvents="auto" style={[styles.topSegment, styles.topSegmentTablet, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant, ...sh(t) }]}>
+        <View style={[styles.topBarInner, isTablet && styles.topBarInnerTablet]} pointerEvents="box-none">
+          {/* Left Section: Back Button + Project Title Badge */}
+          <View pointerEvents="auto" style={[styles.topSegment, styles.topSegmentTablet, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant, ...sh(t) }]}>
           <IconButton name="ChevronLeft" size={icnSz + 2} btnSize={btnSz} variant="ghost" onPress={handleBack} />
           <View style={styles.projBadge}>
             <Text style={[styles.projText, isMobile && { maxWidth: 105 }, { color: t.text }]} numberOfLines={1}>
@@ -386,6 +387,7 @@ export function EditorUI({
             variant="flat"
             onPress={() => setSettingsOpen(true)}
           />
+        </View>
         </View>
       </Animated.View>
 
@@ -561,7 +563,7 @@ export function EditorUI({
       </Modal>
 
       {/* Menu / settings sheet — preserves every engine function */}
-      <Sheet visible={settingsOpen} onClose={() => setSettingsOpen(false)} title={tr.editor.toolsMenu} maxWidth={640}>
+      <Sheet visible={settingsOpen} onClose={() => setSettingsOpen(false)} title={tr.editor.toolsMenu} maxWidth={460}>
         <SectionTitle>{tr.editor.drawingToolsSection}</SectionTitle>
         <View style={styles.actionGrid}>
           <ActionRow icon="Pencil" label={tr.editor.drawMode} onPress={() => { handleSetTool('draw'); setSettingsOpen(false); }} t={t} />
@@ -721,20 +723,27 @@ function sh(t: ReturnType<typeof useTheme>) {
 }
 
 const styles = StyleSheet.create({
-  topBar: {
+  topBarWrap: {
     position: 'absolute',
     top: spacing.sm,
-    left: spacing.md,
-    right: spacing.md,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  topBarWrapTablet: {
+    top: spacing.md,
+  },
+  topBarInner: {
+    width: '100%',
+    maxWidth: 1600,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
   },
-  topBarTablet: {
-    top: spacing.md,
-    left: spacing.lg,
-    right: spacing.lg,
-    gap: spacing.md,
+  topBarInnerTablet: {
+    paddingHorizontal: spacing.lg,
   },
   brandChip: {
     flexDirection: 'row',
@@ -793,15 +802,15 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs + 4,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
+    gap: spacing.xs + 2,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     borderRadius: radius.lg,
     borderWidth: 1,
     marginTop: spacing.xs,
-    flexBasis: '47%',
+    flexBasis: 140,
     flexGrow: 1,
-    minWidth: 130,
+    maxWidth: 240,
   },
   actionIconWrap: {
     width: 32,

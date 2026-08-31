@@ -62,9 +62,20 @@ const WebIframeView = forwardRef<AppWebViewHandle, AppWebViewProps>((props, ref)
         // Execute injected JavaScript on initial load
         if (props.injectedJavaScript) {
           try {
-            win.eval(props.injectedJavaScript);
+            const script = win.document.createElement('script');
+            script.textContent = `
+              (function() {
+                var oLog = console.log;
+                var oErr = console.error;
+                var oWarn = console.warn;
+                console.log = function() { oLog.apply(console, arguments); try { window.parent.postMessage(JSON.stringify({ type: 'log', level: 'log', args: Array.from(arguments).map(String) }), '*'); } catch(e){} };
+                console.error = function() { oErr.apply(console, arguments); try { window.parent.postMessage(JSON.stringify({ type: 'log', level: 'error', args: Array.from(arguments).map(String) }), '*'); } catch(e){} };
+                console.warn = function() { oWarn.apply(console, arguments); try { window.parent.postMessage(JSON.stringify({ type: 'log', level: 'warn', args: Array.from(arguments).map(String) }), '*'); } catch(e){} };
+              })();
+            ` + props.injectedJavaScript;
+            win.document.body.appendChild(script);
           } catch (err) {
-            console.warn('[WebIframeView] eval injectedJavaScript error', err);
+            console.warn('[WebIframeView] script injection error', err);
           }
         }
       }
@@ -80,6 +91,10 @@ const WebIframeView = forwardRef<AppWebViewHandle, AppWebViewProps>((props, ref)
       const data = typeof e.data === 'string' ? e.data : JSON.stringify(e.data);
       try {
         const parsed = JSON.parse(data);
+        if (parsed?.type === 'log') {
+          console.log(`[Iframe ${parsed.level}]`, ...parsed.args);
+          return;
+        }
         if (parsed && typeof parsed === 'object' && parsed.type) {
           props.onMessage({ nativeEvent: { data } });
         }

@@ -5,9 +5,20 @@
 // react-native-webview provides window.ReactNativeWebView automatically.
 export const INJECTED_JAVASCRIPT = `
 (function () {
+  var oErr = console.error;
   function send(msg) {
-    try { window.ReactNativeWebView.postMessage(msg); } catch (e) {}
+    try {
+      if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
+        window.ReactNativeWebView.postMessage(msg);
+      } else if (window.parent && window.parent !== window) {
+        window.parent.postMessage(msg, '*');
+      }
+    } catch (e) {}
   }
+  console.error = function() {
+    oErr.apply(console, arguments);
+    send(JSON.stringify({ type: 'log', level: 'error', args: Array.from(arguments).map(String) }));
+  };
   function onPing() { send('pong'); }
   document.addEventListener('message', function (e) {
     if (e && e.data === 'ping') onPing();

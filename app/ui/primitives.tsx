@@ -505,6 +505,9 @@ const styles = StyleSheet.create({
   },
   sheetScrim: { ...StyleSheet.absoluteFillObject },
   sheetCard: {
+    width: '100%',
+    maxWidth: 500,
+    alignSelf: 'center',
     borderTopLeftRadius: radius.xxl,
     borderTopRightRadius: radius.xxl,
     borderWidth: 1,

@@ -39,6 +39,30 @@
 <link rel="stylesheet" href="styles/narrow.css">
 <link rel="stylesheet" href="styles/responsive.css">
 <link rel="stylesheet" href="styles/m3.css">
+<style>
+  /* Limit max width of bottom toolbars and panels to prevent extreme stretching on large screens/tablets */
+  #narrow-bar, #pages, #views {
+    max-width: 500px;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    border-radius: 12px 12px 0 0;
+    border-left: 1px solid var(--bdr);
+    border-right: 1px solid var(--bdr);
+  }
+  #sc-hidden-bar {
+    max-width: 500px;
+    width: 100%;
+    border-radius: 10px;
+  }
+  /* Topbar constraints */
+  #topbar {
+    max-width: 1600px;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+  }
+</style>
 </head>
 <body>
 <div id="cc"></div>

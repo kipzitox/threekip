@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Platform,
   Alert,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppWebView, AppWebViewHandle } from './components/AppWebView';
@@ -721,8 +722,10 @@ export default function Editor() {
     };
   }, [bridge, reapplyLightBg]);
 
+  const Container = Platform.OS === 'web' ? View : SafeAreaView;
+
   return (
-    <SafeAreaView style={styles.container}>
+    <Container style={styles.container}>
       <StatusBar />
       <AppWebView
         ref={webRef}
@@ -741,7 +744,7 @@ export default function Editor() {
         onMessage={(event) => bridge.handleMessage(event.nativeEvent.data)}
       />
       {ready ? <EditorUI bridge={bridge} webRef={webRef} /> : null}
-    </SafeAreaView>
+    </Container>
   );
 }
 
