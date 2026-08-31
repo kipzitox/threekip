@@ -514,6 +514,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
     paddingTop: spacing.xs,
     maxHeight: '88%',
+    flexShrink: 1,
   },
   sheetCardTablet: {
     width: '100%',
@@ -521,6 +522,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingTop: spacing.md,
     maxHeight: '84%',
+    flexShrink: 1,
     shadowColor: '#000',
     shadowOpacity: 0.2,
     shadowRadius: 20,
