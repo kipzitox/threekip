@@ -350,17 +350,17 @@ export function Sheet({
           toValue: 1,
           duration: isTablet ? 180 : 240,
           easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
         Animated.timing(op, {
           toValue: 1,
           duration: 180,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
         Animated.timing(sc, {
           toValue: 1,
           duration: 180,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
       ]).start();
     } else {
@@ -369,17 +369,17 @@ export function Sheet({
           toValue: 0,
           duration: isTablet ? 140 : 180,
           easing: Easing.in(Easing.cubic),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
         Animated.timing(op, {
           toValue: 0,
           duration: 140,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
         Animated.timing(sc, {
           toValue: 0.95,
           duration: 140,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
       ]).start(({ finished }) => {
         if (finished) setMounted(false);
