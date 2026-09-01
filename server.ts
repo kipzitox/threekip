@@ -16,16 +16,17 @@ app.use(express.static(path.join(process.cwd(), "dist-web")));
 const enginePath = path.join(process.cwd(), "android", "app", "src", "main", "assets", "engine");
 app.use("/engine", express.static(enginePath));
 
+// API routes FIRST
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", app: "threekip-web" });
+});
+
 // Fallback for React Router in Expo Web
 app.get("*", (req, res, next) => {
   if (req.url.startsWith("/engine/") || req.url.startsWith("/api/")) {
     return res.status(404).send("Not found");
   }
   res.sendFile(path.join(process.cwd(), "dist-web", "index.html"));
-});
-
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", app: "threekip-web" });
 });
 
 app.listen(PORT, "0.0.0.0", () => {

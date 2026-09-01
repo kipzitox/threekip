@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -11,22 +11,22 @@ import {
   Alert,
   Platform,
   ViewStyle,
-} from 'react-native';
-import { router } from 'expo-router';
-import * as DocumentPicker from 'expo-document-picker';
-import { useProjectStore } from './stores/ProjectStore';
-import { shareFile } from './services/projectStorage';
-import { Icon, Button, IconButton, Sheet, Chip } from './ui/primitives';
-import { useTheme } from './theme/ThemeProvider';
-import { useI18n } from './i18n';
-import { radius, spacing, typography } from './theme';
+} from "react-native";
+import { router } from "expo-router";
+import * as DocumentPicker from "expo-document-picker";
+import { useProjectStore } from "./stores/ProjectStore";
+import { shareFile } from "./services/projectStorage";
+import { Icon, Button, IconButton, Sheet, Chip } from "./ui/primitives";
+import { useTheme } from "./theme/ThemeProvider";
+import { useI18n } from "./i18n";
+import { radius, spacing, typography } from "./theme";
 
-type Filter = 'all' | 'recent' | 'favorites' | 'shared' | 'trash';
-type ViewMode = 'grid' | 'list';
-type SortKey = 'name' | 'date';
+type Filter = "all" | "recent" | "favorites" | "shared" | "trash";
+type ViewMode = "grid" | "list";
+type SortKey = "name" | "date";
 
 function formatSize(bytes?: number): string {
-  if (!bytes) return '—';
+  if (!bytes) return "—";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -35,14 +35,17 @@ function formatDate(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString();
   } catch {
-    return '';
+    return "";
   }
 }
 function formatTime(iso: string): string {
   try {
-    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   } catch {
-    return '';
+    return "";
   }
 }
 
@@ -62,22 +65,24 @@ export default function Library() {
   const duplicate = useProjectStore((s) => s.duplicate);
   const importProject = useProjectStore((s) => s.importProject);
 
-  const [filter, setFilter] = useState<Filter>('all');
-  const [query, setQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sort, setSort] = useState<SortKey>('date');
+  const [filter, setFilter] = useState<Filter>("all");
+  const [query, setQuery] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [sort, setSort] = useState<SortKey>("date");
   const [menuId, setMenuId] = useState<string | null>(null);
-  const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null);
+  const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(
+    null,
+  );
 
   const filters: { key: Filter; label: string; icon: string }[] = useMemo(
     () => [
-      { key: 'all', label: tr.library.allProjects, icon: 'LayoutGrid' },
-      { key: 'recent', label: tr.library.recent, icon: 'Clock' },
-      { key: 'favorites', label: tr.library.favorites, icon: 'Star' },
-      { key: 'shared', label: tr.library.shared, icon: 'Share2' },
-      { key: 'trash', label: tr.library.trash, icon: 'Trash2' },
+      { key: "all", label: tr.library.allProjects, icon: "LayoutGrid" },
+      { key: "recent", label: tr.library.recent, icon: "Clock" },
+      { key: "favorites", label: tr.library.favorites, icon: "Star" },
+      { key: "shared", label: tr.library.shared, icon: "Share2" },
+      { key: "trash", label: tr.library.trash, icon: "Trash2" },
     ],
-    [tr]
+    [tr],
   );
 
   useEffect(() => {
@@ -87,43 +92,44 @@ export default function Library() {
 
   const visibleProjects = useMemo(() => {
     let list2 = projects.slice();
-    if (filter === 'favorites') list2 = list2.filter((p) => p.favorite && !p.trashed);
-    else if (filter === 'trash') list2 = list2.filter((p) => p.trashed);
-    else if (filter === 'all') list2 = list2.filter((p) => !p.trashed);
+    if (filter === "favorites")
+      list2 = list2.filter((p) => p.favorite && !p.trashed);
+    else if (filter === "trash") list2 = list2.filter((p) => p.trashed);
+    else if (filter === "all") list2 = list2.filter((p) => !p.trashed);
     // 'recent' and 'shared' use the same full (non-trashed) set, ordered below
-    if (filter !== 'trash') list2 = list2.filter((p) => !p.trashed);
+    if (filter !== "trash") list2 = list2.filter((p) => !p.trashed);
     if (query.trim()) {
       const q = query.toLowerCase();
       list2 = list2.filter((p) => p.name.toLowerCase().includes(q));
     }
     list2.sort((a, b) =>
-      sort === 'name'
+      sort === "name"
         ? a.name.localeCompare(b.name)
         : a.updatedAt < b.updatedAt
-        ? 1
-        : -1
+          ? 1
+          : -1,
     );
     return list2;
   }, [projects, filter, query, sort]);
 
   const onOpen = async (id: string) => {
     await open(id);
-    router.push('/editor');
+    router.push("/editor");
   };
   const onNew = async () => {
     await newProject(tr.library.untitled);
-    router.push('/editor');
+    router.push("/editor");
   };
   const onImport = async () => {
     try {
       const res = await DocumentPicker.getDocumentAsync({
-        type: 'application/json',
+        type: "application/json",
         copyToCacheDirectory: true,
       });
       if (res.canceled || !res.assets?.length) return;
       const asset = res.assets[0];
       let rawJson: string | undefined;
-      if (Platform.OS === 'web' && asset.file) {
+      if (Platform.OS === "web" && asset.file) {
         rawJson = await asset.file.text();
       }
       await importProject(asset.uri, asset.name, rawJson);
@@ -153,8 +159,8 @@ export default function Library() {
   const renderItem = ({ item }: { item: (typeof projects)[number] }) => (
     <ProjectCard
       item={item}
-      width={viewMode === 'grid' ? cardWidth : undefined}
-      listMode={viewMode === 'list'}
+      width={viewMode === "grid" ? cardWidth : undefined}
+      listMode={viewMode === "list"}
       onPress={() => onOpen(item.id)}
       onOptions={() => setMenuId(item.id)}
     />
@@ -166,12 +172,26 @@ export default function Library() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.brand}>
-            <View style={[styles.brandIconWrap, { backgroundColor: t.primaryContainer }]}>
-              <Icon name="Boxes" size={24} color={t.onPrimaryContainer} strokeWidth={2.2} />
+            <View
+              style={[
+                styles.brandIconWrap,
+                { backgroundColor: t.primaryContainer },
+              ]}
+            >
+              <Icon
+                name="Boxes"
+                size={24}
+                color={t.onPrimaryContainer}
+                strokeWidth={2.2}
+              />
             </View>
             <View>
-              <Text style={[styles.brandName, { color: t.text }]}>ThreeKip</Text>
-              <Text style={[styles.brandTagline, { color: t.textMuted }]}>{tr.about.subtitle}</Text>
+              <Text style={[styles.brandName, { color: t.text }]}>
+                ThreeKip
+              </Text>
+              <Text style={[styles.brandTagline, { color: t.textMuted }]}>
+                {tr.about.subtitle}
+              </Text>
             </View>
           </View>
           <View style={styles.headerActions}>
@@ -180,14 +200,22 @@ export default function Library() {
               size={20}
               btnSize={40}
               variant="surface"
-              onPress={() => router.push('/settings')}
+              onPress={() => router.push("/settings")}
             />
           </View>
         </View>
 
         {/* Search + controls */}
         <View style={styles.controls}>
-          <View style={[styles.searchBox, { backgroundColor: t.surfaceContainerHigh, borderColor: t.outlineVariant }]}>
+          <View
+            style={[
+              styles.searchBox,
+              {
+                backgroundColor: t.surfaceContainerHigh,
+                borderColor: t.outlineVariant,
+              },
+            ]}
+          >
             <Icon name="Search" size={18} color={t.textMuted} />
             <TextInput
               style={[styles.searchInput, { color: t.text }]}
@@ -197,25 +225,25 @@ export default function Library() {
               onChangeText={setQuery}
             />
             {query.length > 0 && (
-              <Pressable onPress={() => setQuery('')} hitSlop={8}>
+              <Pressable onPress={() => setQuery("")} hitSlop={8}>
                 <Icon name="X" size={16} color={t.textMuted} />
               </Pressable>
             )}
           </View>
           <View style={styles.controlBtns}>
             <IconButton
-              name={sort === 'name' ? 'ArrowDownAZ' : 'Clock'}
+              name={sort === "name" ? "ArrowDownAZ" : "Clock"}
               size={18}
               btnSize={42}
               variant="surface"
-              onPress={() => setSort(sort === 'name' ? 'date' : 'name')}
+              onPress={() => setSort(sort === "name" ? "date" : "name")}
             />
             <IconButton
-              name={viewMode === 'grid' ? 'List' : 'LayoutGrid'}
+              name={viewMode === "grid" ? "List" : "LayoutGrid"}
               size={18}
               btnSize={42}
               variant="surface"
-              onPress={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+              onPress={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
             />
           </View>
         </View>
@@ -242,11 +270,11 @@ export default function Library() {
         </ScrollView>
 
         {/* Content */}
-        {filter === 'shared' ? (
+        {filter === "shared" ? (
           <SharedList />
         ) : visibleProjects.length === 0 ? (
           <EmptyState filter={filter} onNew={onNew} onImport={onImport} />
-        ) : viewMode === 'grid' ? (
+        ) : viewMode === "grid" ? (
           <FlatList
             key={`grid-${numColumns}`}
             data={visibleProjects}
@@ -269,14 +297,26 @@ export default function Library() {
 
       {/* New project FAB (Material Design 3 Floating Action Button) */}
       <Pressable
-        style={[styles.fab, { backgroundColor: t.primaryContainer, ...shadowsFor(t) }]}
+        style={[
+          styles.fab,
+          { backgroundColor: t.primaryContainer, ...shadowsFor(t) },
+        ]}
         onPress={onNew}
       >
-        <Icon name="Plus" size={32} color={t.onPrimaryContainer} strokeWidth={3} />
+        <Icon
+          name="Plus"
+          size={32}
+          color={t.onPrimaryContainer}
+          strokeWidth={3}
+        />
       </Pressable>
 
       {/* Options menu */}
-      <Sheet visible={!!menuId} onClose={() => setMenuId(null)} title={tr.library.projectMenuTitle}>
+      <Sheet
+        visible={!!menuId}
+        onClose={() => setMenuId(null)}
+        title={tr.library.projectMenuTitle}
+      >
         {menuId ? (
           <MenuActions
             id={menuId}
@@ -289,7 +329,7 @@ export default function Library() {
             }}
             onRename={() => {
               const p = projects.find((x) => x.id === menuId);
-              setRenaming({ id: menuId, name: p?.name ?? '' });
+              setRenaming({ id: menuId, name: p?.name ?? "" });
               setMenuId(null);
             }}
             onToggleFav={async () => {
@@ -313,16 +353,16 @@ export default function Library() {
                 tr.library.deleteConfirmTitle,
                 tr.library.deleteConfirmMessage,
                 [
-                  { text: tr.common.cancel, style: 'cancel' },
+                  { text: tr.common.cancel, style: "cancel" },
                   {
                     text: tr.common.delete,
-                    style: 'destructive',
+                    style: "destructive",
                     onPress: async () => {
                       await purge(menuId);
                       setMenuId(null);
                     },
                   },
-                ]
+                ],
               );
             }}
           />
@@ -330,11 +370,22 @@ export default function Library() {
       </Sheet>
 
       {/* Rename sheet */}
-      <Sheet visible={!!renaming} onClose={() => setRenaming(null)} title={tr.library.renameTitle}>
+      <Sheet
+        visible={!!renaming}
+        onClose={() => setRenaming(null)}
+        title={tr.library.renameTitle}
+      >
         {renaming ? (
           <View>
             <TextInput
-              style={[styles.renameInput, { backgroundColor: t.surfaceAlt, color: t.text, borderColor: t.border }]}
+              style={[
+                styles.renameInput,
+                {
+                  backgroundColor: t.surfaceAlt,
+                  color: t.text,
+                  borderColor: t.border,
+                },
+              ]}
               value={renaming.name}
               onChangeText={(v) => setRenaming({ ...renaming, name: v })}
               placeholder={tr.library.renamePlaceholder}
@@ -343,7 +394,10 @@ export default function Library() {
             <Button
               label={tr.common.save}
               onPress={async () => {
-                await rename(renaming.id, renaming.name.trim() || tr.library.untitled);
+                await rename(
+                  renaming.id,
+                  renaming.name.trim() || tr.library.untitled,
+                );
                 setRenaming(null);
               }}
             />
@@ -361,7 +415,13 @@ function ProjectCard({
   onPress,
   onOptions,
 }: {
-  item: { id: string; name: string; updatedAt: string; size?: number; favorite?: boolean };
+  item: {
+    id: string;
+    name: string;
+    updatedAt: string;
+    size?: number;
+    favorite?: boolean;
+  };
   width?: number;
   listMode?: boolean;
   onPress: () => void;
@@ -374,13 +434,20 @@ function ProjectCard({
         style={({ pressed }) => [
           styles.rowCard,
           {
-            backgroundColor: pressed ? t.surfaceContainerHigh : t.surfaceContainerLow,
+            backgroundColor: pressed
+              ? t.surfaceContainerHigh
+              : t.surfaceContainerLow,
             borderColor: t.outlineVariant,
           },
         ]}
         onPress={onPress}
       >
-        <View style={[styles.rowThumb, { backgroundColor: t.surfaceContainerHighest }]}>
+        <View
+          style={[
+            styles.rowThumb,
+            { backgroundColor: t.surfaceContainerHighest },
+          ]}
+        >
           <Icon name="Box" size={24} color={t.primary} strokeWidth={2} />
         </View>
         <View style={styles.rowMain}>
@@ -388,10 +455,17 @@ function ProjectCard({
             {item.name}
           </Text>
           <Text style={[styles.cardMeta, { color: t.textMuted }]}>
-            {formatDate(item.updatedAt)} · {formatTime(item.updatedAt)} · {formatSize(item.size)}
+            {formatDate(item.updatedAt)} · {formatTime(item.updatedAt)} ·{" "}
+            {formatSize(item.size)}
           </Text>
         </View>
-        <IconButton name="MoreVertical" size={18} btnSize={36} variant="ghost" onPress={onOptions} />
+        <IconButton
+          name="MoreVertical"
+          size={18}
+          btnSize={36}
+          variant="ghost"
+          onPress={onOptions}
+        />
       </Pressable>
     );
   }
@@ -400,21 +474,40 @@ function ProjectCard({
       style={({ pressed }) => [
         styles.card,
         {
-          width: width ?? '48%',
-          backgroundColor: pressed ? t.surfaceContainerHigh : t.surfaceContainerLow,
+          width: width ?? "48%",
+          backgroundColor: pressed
+            ? t.surfaceContainerHigh
+            : t.surfaceContainerLow,
           borderColor: t.outlineVariant,
         },
       ]}
       onPress={onPress}
     >
-      <View style={[styles.thumb, { backgroundColor: t.surfaceContainerHighest }]}>
+      <View
+        style={[styles.thumb, { backgroundColor: t.surfaceContainerHighest }]}
+      >
         <Icon name="Box" size={48} color={t.primary} strokeWidth={1.5} />
         {item.favorite ? (
-          <View style={[styles.favBadge, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant }]}>
+          <View
+            style={[
+              styles.favBadge,
+              {
+                backgroundColor: t.surfaceContainerLow,
+                borderColor: t.outlineVariant,
+              },
+            ]}
+          >
             <Icon name="Star" size={13} color="#EAB308" fill="#EAB308" />
           </View>
         ) : null}
-        <Pressable style={[styles.cardOptions, { backgroundColor: t.surfaceContainerLow }]} onPress={onOptions} hitSlop={8}>
+        <Pressable
+          style={[
+            styles.cardOptions,
+            { backgroundColor: t.surfaceContainerLow },
+          ]}
+          onPress={onOptions}
+          hitSlop={8}
+        >
           <Icon name="MoreVertical" size={16} color={t.text} />
         </Pressable>
       </View>
@@ -459,7 +552,12 @@ function MenuActions({
 }) {
   const t = useTheme();
   const { t: tr } = useI18n();
-  const action = (icon: string, label: string, fn: () => void, danger?: boolean) => {
+  const action = (
+    icon: string,
+    label: string,
+    fn: () => void,
+    danger?: boolean,
+  ) => {
     const fg = danger ? t.error : t.text;
     const bg = danger ? t.errorContainer : t.secondaryContainer;
     const icnFg = danger ? t.onErrorContainer : t.onSecondaryContainer;
@@ -470,7 +568,7 @@ function MenuActions({
           styles.menuItem,
           {
             borderColor: t.divider,
-            backgroundColor: pressed ? t.surfaceContainerHigh : 'transparent',
+            backgroundColor: pressed ? t.surfaceContainerHigh : "transparent",
           },
         ]}
         onPress={() => {
@@ -481,25 +579,31 @@ function MenuActions({
         <View style={[styles.menuIconWrap, { backgroundColor: bg }]}>
           <Icon name={icon} size={18} color={icnFg} />
         </View>
-        <Text style={[styles.menuLabel, { color: fg, fontWeight: '500' }]}>{label}</Text>
+        <Text style={[styles.menuLabel, { color: fg, fontWeight: "500" }]}>
+          {label}
+        </Text>
       </Pressable>
     );
   };
   if (isTrash) {
     return (
       <View>
-        {action('FolderOpen', tr.library.restore, onRestore)}
-        {action('Trash2', tr.library.deleteForever, onPurge, true)}
+        {action("FolderOpen", tr.library.restore, onRestore)}
+        {action("Trash2", tr.library.deleteForever, onPurge, true)}
       </View>
     );
   }
   return (
     <View>
-      {action('FolderOpen', tr.library.open, onOpen)}
-      {action('Pencil', tr.library.rename, onRename)}
-      {action('Star', isFavorite ? tr.library.unfavorite : tr.library.favorite, onToggleFav)}
-      {action('Copy', tr.library.duplicate, onDuplicate)}
-      {action('Trash2', tr.library.moveToTrash, onTrash, true)}
+      {action("FolderOpen", tr.library.open, onOpen)}
+      {action("Pencil", tr.library.rename, onRename)}
+      {action(
+        "Star",
+        isFavorite ? tr.library.unfavorite : tr.library.favorite,
+        onToggleFav,
+      )}
+      {action("Copy", tr.library.duplicate, onDuplicate)}
+      {action("Trash2", tr.library.moveToTrash, onTrash, true)}
     </View>
   );
 }
@@ -529,19 +633,32 @@ function SharedList() {
       contentContainerStyle={styles.listPad}
       renderItem={({ item }) => (
         <Pressable
-          style={[styles.rowCard, { backgroundColor: t.surface, borderColor: t.border }]}
+          style={[
+            styles.rowCard,
+            { backgroundColor: t.surface, borderColor: t.border },
+          ]}
           onPress={() => shareFile(item.path)}
         >
           <View style={[styles.rowThumb, { backgroundColor: t.surfaceAlt }]}>
             <Icon name="FileBox" size={22} color={t.primary} />
           </View>
           <View style={styles.rowMain}>
-            <Text style={[styles.cardName, { color: t.text }]} numberOfLines={1}>
+            <Text
+              style={[styles.cardName, { color: t.text }]}
+              numberOfLines={1}
+            >
               {item.name}
             </Text>
-            <Text style={[styles.cardMeta, { color: t.textMuted }]}>{formatSize(item.size)}</Text>
+            <Text style={[styles.cardMeta, { color: t.textMuted }]}>
+              {formatSize(item.size)}
+            </Text>
           </View>
-          <IconButton name="Share2" size={18} variant="ghost" onPress={() => shareFile(item.path)} />
+          <IconButton
+            name="Share2"
+            size={18}
+            variant="ghost"
+            onPress={() => shareFile(item.path)}
+          />
         </Pressable>
       )}
     />
@@ -559,38 +676,72 @@ function EmptyState({
 }) {
   const t = useTheme();
   const { t: tr } = useI18n();
-  if (filter === 'trash') {
+  if (filter === "trash") {
     return (
       <View style={styles.empty}>
-        <View style={[styles.emptyIconWrap, { backgroundColor: t.surfaceContainerHighest }]}>
+        <View
+          style={[
+            styles.emptyIconWrap,
+            { backgroundColor: t.surfaceContainerHighest },
+          ]}
+        >
           <Icon name="Trash2" size={32} color={t.textMuted} />
         </View>
-        <Text style={[styles.emptyTitle, { color: t.text }]}>{tr.library.emptyTrashTitle}</Text>
-        <Text style={[styles.emptyText, { color: t.textMuted }]}>{tr.library.emptyTrashSubtitle}</Text>
+        <Text style={[styles.emptyTitle, { color: t.text }]}>
+          {tr.library.emptyTrashTitle}
+        </Text>
+        <Text style={[styles.emptyText, { color: t.textMuted }]}>
+          {tr.library.emptyTrashSubtitle}
+        </Text>
       </View>
     );
   }
-  if (filter === 'favorites') {
+  if (filter === "favorites") {
     return (
       <View style={styles.empty}>
-        <View style={[styles.emptyIconWrap, { backgroundColor: t.surfaceContainerHighest }]}>
+        <View
+          style={[
+            styles.emptyIconWrap,
+            { backgroundColor: t.surfaceContainerHighest },
+          ]}
+        >
           <Icon name="Star" size={32} color={t.textMuted} />
         </View>
-        <Text style={[styles.emptyTitle, { color: t.text }]}>{tr.library.emptyFavoritesTitle}</Text>
-        <Text style={[styles.emptyText, { color: t.textMuted }]}>{tr.library.emptyFavoritesSubtitle}</Text>
+        <Text style={[styles.emptyTitle, { color: t.text }]}>
+          {tr.library.emptyFavoritesTitle}
+        </Text>
+        <Text style={[styles.emptyText, { color: t.textMuted }]}>
+          {tr.library.emptyFavoritesSubtitle}
+        </Text>
       </View>
     );
   }
   return (
     <View style={styles.empty}>
-      <View style={[styles.emptyIconWrap, { backgroundColor: t.primaryContainer }]}>
-        <Icon name="Box" size={36} color={t.onPrimaryContainer} strokeWidth={2} />
+      <View
+        style={[styles.emptyIconWrap, { backgroundColor: t.primaryContainer }]}
+      >
+        <Icon
+          name="Box"
+          size={36}
+          color={t.onPrimaryContainer}
+          strokeWidth={2}
+        />
       </View>
-      <Text style={[styles.emptyTitle, { color: t.text }]}>{tr.library.emptyAllTitle}</Text>
-      <Text style={[styles.emptyText, { color: t.textMuted }]}>{tr.library.emptyAllSubtitle}</Text>
+      <Text style={[styles.emptyTitle, { color: t.text }]}>
+        {tr.library.emptyAllTitle}
+      </Text>
+      <Text style={[styles.emptyText, { color: t.textMuted }]}>
+        {tr.library.emptyAllSubtitle}
+      </Text>
       <View style={styles.emptyBtns}>
         <Button label={tr.library.newProject} icon="Plus" onPress={onNew} />
-        <Button label={tr.library.importFile} variant="tonal" icon="Download" onPress={onImport} />
+        <Button
+          label={tr.library.importFile}
+          variant="tonal"
+          icon="Download"
+          onPress={onImport}
+        />
       </View>
     </View>
   );
@@ -610,30 +761,30 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   mainWrapper: {
     flex: 1,
-    width: '100%',
+    width: "100%",
     maxWidth: 1280,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
   },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  brand: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   brandIconWrap: {
     width: 44,
     height: 44,
     borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   brandName: {
     fontSize: typography.title.fontSize,
     fontFamily: typography.title.fontFamily,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.1,
   },
   brandTagline: {
@@ -641,18 +792,18 @@ const styles = StyleSheet.create({
     fontFamily: typography.caption.fontFamily,
     marginTop: 1,
   },
-  headerActions: { flexDirection: 'row', gap: spacing.xs },
+  headerActions: { flexDirection: "row", gap: spacing.xs },
   controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.sm,
   },
   searchBox: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.sm,
     borderRadius: radius.full,
     borderWidth: 1,
@@ -664,25 +815,29 @@ const styles = StyleSheet.create({
     fontSize: typography.body.fontSize,
     fontFamily: typography.body.fontFamily,
   },
-  controlBtns: { flexDirection: 'row', gap: spacing.xs },
+  controlBtns: { flexDirection: "row", gap: spacing.xs },
   tabs: { maxHeight: 44, marginBottom: spacing.sm },
-  tabsContent: { gap: spacing.sm, paddingHorizontal: spacing.lg, alignItems: 'center' },
+  tabsContent: {
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    alignItems: "center",
+  },
   listPad: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl + 32 },
-  gridRow: { justifyContent: 'space-between', marginBottom: spacing.md },
+  gridRow: { justifyContent: "space-between", marginBottom: spacing.md },
   card: {
     borderRadius: radius.lg,
     borderWidth: 1,
     marginBottom: spacing.md,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   thumb: {
     height: 124,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
   favBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: spacing.sm,
     left: spacing.sm,
     borderRadius: radius.full,
@@ -692,7 +847,7 @@ const styles = StyleSheet.create({
   cardBody: { padding: spacing.md, paddingTop: spacing.sm },
   cardName: {
     fontSize: typography.bodyLarge.fontSize,
-    fontWeight: '600',
+    fontWeight: "600",
     fontFamily: typography.bodyLarge.fontFamily,
     letterSpacing: 0.15,
   },
@@ -707,15 +862,15 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   cardOptions: {
-    position: 'absolute',
+    position: "absolute",
     top: spacing.sm,
     right: spacing.sm,
     borderRadius: radius.full,
     padding: 6,
   },
   rowCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: radius.lg,
     borderWidth: 1,
     padding: spacing.md,
@@ -725,23 +880,23 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   rowMain: { flex: 1, paddingHorizontal: spacing.md },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: spacing.lg,
     bottom: spacing.lg + 10,
     width: 56,
     height: 56,
     borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.md,
     paddingVertical: spacing.sm + 2,
     paddingHorizontal: spacing.md,
@@ -752,8 +907,8 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   menuLabel: {
     fontSize: typography.labelLarge.fontSize,
@@ -767,12 +922,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     fontFamily: typography.bodyLarge.fontFamily,
   },
-  sharedEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.md },
-  sharedEmptyText: { textAlign: 'center', fontSize: 14 },
+  sharedEmpty: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: spacing.xl,
+    gap: spacing.md,
+  },
+  sharedEmptyText: { textAlign: "center", fontSize: 14 },
   empty: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: spacing.xs,
     padding: spacing.xl,
     marginTop: spacing.xxl,
@@ -781,21 +942,21 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: radius.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: spacing.sm,
   },
   emptyTitle: {
     fontSize: typography.title.fontSize,
-    fontWeight: '600',
+    fontWeight: "600",
     fontFamily: typography.title.fontFamily,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptyText: {
     fontSize: typography.body.fontSize,
     fontFamily: typography.body.fontFamily,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: spacing.md,
   },
-  emptyBtns: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  emptyBtns: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm },
 });

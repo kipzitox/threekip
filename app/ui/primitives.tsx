@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -11,10 +11,12 @@ import {
   Easing,
   ActivityIndicator,
   useWindowDimensions,
-} from 'react-native';
-import * as Lucide from 'lucide-react-native';
-import { useTheme } from '../theme/ThemeProvider';
-import { radius, spacing, typography, shadows } from '../theme';
+  Platform,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Lucide from "lucide-react-native";
+import { useTheme } from "../theme/ThemeProvider";
+import { radius, spacing, typography, shadows } from "../theme";
 
 const shadowStyles = StyleSheet.create({
   sm: shadows.sm,
@@ -39,16 +41,33 @@ export function Icon({
   fill?: string;
 }) {
   const t = useTheme();
-  const Cmp = (Lucide as unknown as Record<string, React.ComponentType<any>>)[name];
+  const Cmp = (Lucide as unknown as Record<string, React.ComponentType<any>>)[
+    name
+  ];
   if (!Cmp) return null;
-  return <Cmp size={size} color={color ?? t.text} strokeWidth={strokeWidth} fill={fill} />;
+  return (
+    <Cmp
+      size={size}
+      color={color ?? t.text}
+      strokeWidth={strokeWidth}
+      fill={fill}
+    />
+  );
 }
 
-type BtnVariant = 'primary' | 'secondary' | 'tonal' | 'elevated' | 'outlined' | 'ghost' | 'text' | 'danger';
+type BtnVariant =
+  | "primary"
+  | "secondary"
+  | "tonal"
+  | "elevated"
+  | "outlined"
+  | "ghost"
+  | "text"
+  | "danger";
 export function Button({
   label,
   onPress,
-  variant = 'primary',
+  variant = "primary",
   disabled,
   icon,
   style,
@@ -61,31 +80,31 @@ export function Button({
   style?: ViewStyle;
 }) {
   const t = useTheme();
-  
+
   let bg = t.primary;
   let fg = t.onPrimary;
   let hasBorder = false;
   let hasElevation = false;
 
-  if (variant === 'primary') {
+  if (variant === "primary") {
     bg = t.primary;
     fg = t.onPrimary;
-  } else if (variant === 'danger') {
-    bg = '#d93829';
-    fg = '#ffffff';
-  } else if (variant === 'tonal' || variant === 'secondary') {
+  } else if (variant === "danger") {
+    bg = "#d93829";
+    fg = "#ffffff";
+  } else if (variant === "tonal" || variant === "secondary") {
     bg = t.secondaryContainer;
     fg = t.onSecondaryContainer;
-  } else if (variant === 'elevated') {
+  } else if (variant === "elevated") {
     bg = t.surfaceContainerLow;
     fg = t.primary;
     hasElevation = true;
-  } else if (variant === 'outlined') {
-    bg = 'transparent';
+  } else if (variant === "outlined") {
+    bg = "transparent";
     fg = t.primary;
     hasBorder = true;
-  } else if (variant === 'ghost' || variant === 'text') {
-    bg = 'transparent';
+  } else if (variant === "ghost" || variant === "text") {
+    bg = "transparent";
     fg = t.primary;
   }
 
@@ -97,7 +116,7 @@ export function Button({
         styles.btn,
         {
           backgroundColor: bg,
-          borderColor: hasBorder ? t.outlineVariant : 'transparent',
+          borderColor: hasBorder ? t.outlineVariant : "transparent",
           borderWidth: hasBorder ? 1 : 0,
           opacity: disabled ? 0.38 : pressed ? 0.88 : 1,
         },
@@ -120,7 +139,7 @@ export function IconButton({
   disabled,
   size = 20,
   btnSize = 40,
-  variant = 'surface',
+  variant = "surface",
   style,
 }: {
   name: string;
@@ -129,13 +148,14 @@ export function IconButton({
   disabled?: boolean;
   size?: number;
   btnSize?: number;
-  variant?: 'surface' | 'floating' | 'ghost' | 'flat' | 'outlined' | 'tonal' | 'filled';
+  variant?:
+    "surface" | "floating" | "ghost" | "flat" | "outlined" | "tonal" | "filled";
   style?: ViewStyle;
 }) {
   const t = useTheme();
 
   // Material Design 3 Toggle Button & Standard Icon Button behavior
-  let bg = 'transparent';
+  let bg = "transparent";
   let fg = t.text;
   let hasBorder = false;
   let hasShadow = false;
@@ -146,35 +166,35 @@ export function IconButton({
     fg = t.onPrimaryContainer;
   } else {
     switch (variant) {
-      case 'filled':
+      case "filled":
         bg = t.primary;
         fg = t.onPrimary;
         break;
-      case 'tonal':
+      case "tonal":
         bg = t.secondaryContainer;
         fg = t.onSecondaryContainer;
         break;
-      case 'floating':
+      case "floating":
         bg = t.surfaceContainer;
         fg = t.text;
         hasShadow = true;
         break;
-      case 'surface':
+      case "surface":
         bg = t.surfaceContainerHigh;
         fg = t.text;
         break;
-      case 'outlined':
-        bg = 'transparent';
+      case "outlined":
+        bg = "transparent";
         fg = t.text;
         hasBorder = true;
         break;
-      case 'ghost':
-        bg = 'transparent';
+      case "ghost":
+        bg = "transparent";
         fg = t.textMuted;
         break;
-      case 'flat':
+      case "flat":
       default:
-        bg = 'transparent';
+        bg = "transparent";
         fg = t.text;
         break;
     }
@@ -190,8 +210,13 @@ export function IconButton({
           width: btnSize,
           height: btnSize,
           borderRadius: radius.full,
-          backgroundColor: pressed && !active ? (variant === 'flat' || variant === 'ghost' ? t.surfaceContainerHighest : t.surfaceAlt) : bg,
-          borderColor: hasBorder ? t.outlineVariant : 'transparent',
+          backgroundColor:
+            pressed && !active
+              ? variant === "flat" || variant === "ghost"
+                ? t.surfaceContainerHighest
+                : t.surfaceAlt
+              : bg,
+          borderColor: hasBorder ? t.outlineVariant : "transparent",
           borderWidth: hasBorder ? 1 : 0,
           opacity: disabled ? 0.38 : pressed ? 0.8 : 1,
         },
@@ -208,20 +233,20 @@ export function Panel({
   children,
   style,
   padded = true,
-  variant = 'elevated',
+  variant = "elevated",
 }: {
   children: React.ReactNode;
   style?: ViewStyle;
   padded?: boolean;
-  variant?: 'elevated' | 'outlined' | 'filled';
+  variant?: "elevated" | "outlined" | "filled";
 }) {
   const t = useTheme();
   const bg =
-    variant === 'elevated'
+    variant === "elevated"
       ? t.surfaceContainerLow
-      : variant === 'filled'
-      ? t.surfaceContainerHighest
-      : t.surface;
+      : variant === "filled"
+        ? t.surfaceContainerHighest
+        : t.surface;
 
   return (
     <View
@@ -229,10 +254,11 @@ export function Panel({
         styles.panel,
         {
           backgroundColor: bg,
-          borderColor: variant === 'outlined' ? t.outlineVariant : 'transparent',
-          borderWidth: variant === 'outlined' ? 1 : 0,
+          borderColor:
+            variant === "outlined" ? t.outlineVariant : "transparent",
+          borderWidth: variant === "outlined" ? 1 : 0,
         },
-        variant === 'elevated' && shadowStyles.level1,
+        variant === "elevated" && shadowStyles.level1,
         padded && styles.panelPad,
         style,
       ]}
@@ -258,7 +284,7 @@ export function Chip({
   const t = useTheme();
   const bg = active ? t.secondaryContainer : t.surface;
   const fg = active ? t.onSecondaryContainer : t.textMuted;
-  const borderColor = active ? 'transparent' : t.outlineVariant;
+  const borderColor = active ? "transparent" : t.outlineVariant;
 
   return (
     <Pressable
@@ -275,9 +301,19 @@ export function Chip({
       ]}
     >
       {icon ? (
-        <Icon name={icon} size={15} color={fg} strokeWidth={active ? 2.3 : 1.8} />
+        <Icon
+          name={icon}
+          size={15}
+          color={fg}
+          strokeWidth={active ? 2.3 : 1.8}
+        />
       ) : null}
-      <Text style={[styles.chipText, { color: fg, fontWeight: active ? '600' : '500' }]}>
+      <Text
+        style={[
+          styles.chipText,
+          { color: fg, fontWeight: active ? "600" : "500" },
+        ]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -298,73 +334,169 @@ export function Sheet({
   maxWidth?: number;
 }) {
   const t = useTheme();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const isTablet = width >= 768;
   const ty = useRef(new Animated.Value(0)).current;
   const op = useRef(new Animated.Value(0)).current;
   const sc = useRef(new Animated.Value(0.95)).current;
+  const [mounted, setMounted] = useState(visible);
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(ty, {
-        toValue: visible ? 1 : 0,
-        duration: isTablet ? 180 : 240,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(op, {
-        toValue: visible ? 1 : 0,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-      Animated.timing(sc, {
-        toValue: visible ? 1 : 0.95,
-        duration: 180,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start();
+    if (visible) {
+      setMounted(true);
+      Animated.parallel([
+        Animated.timing(ty, {
+          toValue: 1,
+          duration: isTablet ? 180 : 240,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(op, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sc, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(ty, {
+          toValue: 0,
+          duration: isTablet ? 140 : 180,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(op, {
+          toValue: 0,
+          duration: 140,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sc, {
+          toValue: 0.95,
+          duration: 140,
+          useNativeDriver: true,
+        }),
+      ]).start(({ finished }) => {
+        if (finished) setMounted(false);
+      });
+    }
   }, [visible, op, ty, sc, isTablet]);
 
+  if (!mounted && !visible) return null;
+
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal
+      visible={mounted}
+      transparent
+      statusBarTranslucent
+      hardwareAccelerated
+      animationType="none"
+      onRequestClose={onClose}
+    >
       <View style={[styles.sheetRoot, isTablet && styles.sheetRootTablet]}>
-        <Animated.View style={[styles.sheetScrim, { opacity: op, backgroundColor: t.overlay }]}>
+        <Animated.View
+          style={[
+            styles.sheetScrim,
+            { opacity: op, backgroundColor: t.overlay },
+          ]}
+        >
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         </Animated.View>
         <Animated.View
           style={[
             styles.sheetCard,
-            isTablet && [styles.sheetCardTablet, { maxWidth }],
+            isTablet
+              ? [styles.sheetCardTablet, { maxWidth }]
+              : { height: Math.min(height * 0.82, 680) },
             {
-              backgroundColor: isTablet ? t.surfaceContainerHigh : t.surfaceContainerLow,
+              backgroundColor: isTablet
+                ? t.surfaceContainerHigh
+                : t.surfaceContainerLow,
               borderColor: t.outlineVariant,
               transform: isTablet
-                ? [{ scale: sc }, { translateY: ty.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }]
-                : [{ translateY: ty.interpolate({ inputRange: [0, 1], outputRange: [520, 0] }) }],
+                ? [
+                    { scale: sc },
+                    {
+                      translateY: ty.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [16, 0],
+                      }),
+                    },
+                  ]
+                : [
+                    {
+                      translateY: ty.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [600, 0],
+                      }),
+                    },
+                  ],
             },
           ]}
         >
           {isTablet ? (
-            <View style={[styles.sheetHdrTablet, { borderBottomColor: t.divider }]}>
-              {title ? <Text style={[styles.sheetTitleTablet, { color: t.text }]}>{title}</Text> : <View />}
-              <IconButton name="X" size={18} btnSize={36} variant="ghost" onPress={onClose} />
+            <View
+              style={[styles.sheetHdrTablet, { borderBottomColor: t.divider }]}
+            >
+              {title ? (
+                <Text style={[styles.sheetTitleTablet, { color: t.text }]}>
+                  {title}
+                </Text>
+              ) : (
+                <View />
+              )}
+              <IconButton
+                name="X"
+                size={18}
+                btnSize={36}
+                variant="ghost"
+                onPress={onClose}
+              />
             </View>
           ) : (
-            <View style={[styles.sheetHdrMobile, { borderBottomColor: t.divider }]}>
+            <View
+              style={[styles.sheetHdrMobile, { borderBottomColor: t.divider }]}
+            >
               <View style={styles.sheetHandleWrap}>
-                <View style={[styles.sheetHandle, { backgroundColor: t.outline }]} />
+                <View
+                  style={[styles.sheetHandle, { backgroundColor: t.outline }]}
+                />
               </View>
               <View style={styles.sheetTitleRowMobile}>
-                {title ? <Text style={[styles.sheetTitle, { color: t.text }]} numberOfLines={1}>{title}</Text> : <View />}
-                <IconButton name="X" size={18} btnSize={36} variant="ghost" onPress={onClose} />
+                {title ? (
+                  <Text
+                    style={[styles.sheetTitle, { color: t.text }]}
+                    numberOfLines={1}
+                  >
+                    {title}
+                  </Text>
+                ) : (
+                  <View />
+                )}
+                <IconButton
+                  name="X"
+                  size={18}
+                  btnSize={36}
+                  variant="ghost"
+                  onPress={onClose}
+                />
               </View>
             </View>
           )}
           <ScrollView
             style={styles.sheetBody}
-            contentContainerStyle={[styles.sheetBodyPad, isTablet && styles.sheetBodyPadTablet]}
+            contentContainerStyle={[
+              styles.sheetBodyPad,
+              isTablet && styles.sheetBodyPadTablet,
+              { paddingBottom: Math.max(insets.bottom + 24, 40) },
+            ]}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             {children}
           </ScrollView>
@@ -389,7 +521,10 @@ export function Swatch({
       onPress={onPress}
       style={[
         styles.swatch,
-        { backgroundColor: color, borderColor: active ? t.primary : t.outlineVariant },
+        {
+          backgroundColor: color,
+          borderColor: active ? t.primary : t.outlineVariant,
+        },
         active && styles.swatchActive,
       ]}
     />
@@ -407,7 +542,12 @@ export function Segmented<T extends string>({
 }) {
   const t = useTheme();
   return (
-    <View style={[styles.seg, { backgroundColor: t.surfaceContainer, borderColor: t.outlineVariant }]}>
+    <View
+      style={[
+        styles.seg,
+        { backgroundColor: t.surfaceContainer, borderColor: t.outlineVariant },
+      ]}
+    >
       {items.map((it) => {
         const active = it.key === value;
         return (
@@ -433,7 +573,7 @@ export function Segmented<T extends string>({
                   styles.segLabel,
                   {
                     color: active ? t.onSecondaryContainer : t.textMuted,
-                    fontWeight: active ? '600' : '500',
+                    fontWeight: active ? "600" : "500",
                   },
                 ]}
               >
@@ -454,7 +594,9 @@ export function Spinner({ color }: { color?: string }) {
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
   const t = useTheme();
-  return <Text style={[styles.sectionTitle, { color: t.primary }]}>{children}</Text>;
+  return (
+    <Text style={[styles.sectionTitle, { color: t.primary }]}>{children}</Text>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -462,31 +604,31 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     paddingVertical: spacing.sm + 2,
     paddingHorizontal: spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minHeight: 40,
   },
-  btnInner: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  btnInner: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   btnText: {
     fontSize: typography.labelLarge.fontSize,
     fontFamily: typography.labelLarge.fontFamily,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 0.2,
   },
   iconBtn: {
     width: 40,
     height: 40,
     borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   panel: {
     borderRadius: radius.lg,
   },
   panelPad: { padding: spacing.lg },
   chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -497,42 +639,42 @@ const styles = StyleSheet.create({
     fontSize: typography.label.fontSize,
     fontFamily: typography.label.fontFamily,
   },
-  sheetRoot: { flex: 1, justifyContent: 'flex-end' },
+  sheetRoot: { flex: 1, justifyContent: "flex-end" },
   sheetRootTablet: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: spacing.xl,
   },
   sheetScrim: { ...StyleSheet.absoluteFillObject },
   sheetCard: {
-    width: '100%',
+    width: "100%",
     maxWidth: 500,
-    alignSelf: 'center',
+    alignSelf: "center",
     borderTopLeftRadius: radius.xxl,
     borderTopRightRadius: radius.xxl,
     borderWidth: 1,
     borderBottomWidth: 0,
     paddingTop: spacing.xs,
-    maxHeight: '88%',
+    maxHeight: "88%",
     flexShrink: 1,
   },
   sheetCardTablet: {
-    width: '100%',
+    width: "100%",
     borderRadius: radius.xxl,
     borderBottomWidth: 1,
     paddingTop: spacing.md,
-    maxHeight: '84%',
+    maxHeight: "84%",
     flexShrink: 1,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
     elevation: 10,
   },
   sheetHdrTablet: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.sm,
     borderBottomWidth: 1,
@@ -541,11 +683,20 @@ const styles = StyleSheet.create({
   sheetTitleTablet: {
     fontSize: typography.title.fontSize,
     fontFamily: typography.title.fontFamily,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 0.15,
   },
-  sheetHandleWrap: { alignItems: 'center', paddingTop: spacing.xs, paddingBottom: 2 },
-  sheetHandle: { width: 32, height: 4, borderRadius: radius.full, opacity: 0.6 },
+  sheetHandleWrap: {
+    alignItems: "center",
+    paddingTop: spacing.xs,
+    paddingBottom: 2,
+  },
+  sheetHandle: {
+    width: 32,
+    height: 4,
+    borderRadius: radius.full,
+    opacity: 0.6,
+  },
   sheetHdrMobile: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.xs,
@@ -553,20 +704,24 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   sheetTitleRowMobile: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingLeft: spacing.xs,
   },
   sheetTitle: {
     fontSize: typography.title.fontSize,
     fontFamily: typography.title.fontFamily,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 0.15,
   },
   sheetBody: { flex: 1 },
   sheetBodyPad: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl },
-  sheetBodyPadTablet: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl, paddingTop: spacing.sm },
+  sheetBodyPadTablet: {
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xl,
+    paddingTop: spacing.sm,
+  },
   swatch: {
     width: 36,
     height: 36,
@@ -576,7 +731,7 @@ const styles = StyleSheet.create({
   },
   swatchActive: { borderWidth: 3 },
   seg: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderRadius: radius.full,
     borderWidth: 1,
     padding: 3,
@@ -584,20 +739,23 @@ const styles = StyleSheet.create({
   },
   segItem: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: radius.full,
   },
-  segLabel: { fontSize: typography.label.fontSize, fontFamily: typography.label.fontFamily },
+  segLabel: {
+    fontSize: typography.label.fontSize,
+    fontFamily: typography.label.fontFamily,
+  },
   sectionTitle: {
     fontSize: typography.label.fontSize,
     fontFamily: typography.label.fontFamily,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    textTransform: "uppercase",
     letterSpacing: 0.8,
     marginBottom: spacing.sm,
     marginTop: spacing.lg,
