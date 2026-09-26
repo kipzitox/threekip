@@ -47,28 +47,41 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build Android APK
-        run: eas build --platform android --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive --no-wait
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        id: eas_build
+        run: |
+          eas build --platform android --profile ${{ github.event.inputs.profile || 'preview' }} --non-interactive --json > eas-output.json
+          cat eas-output.json
+          BUILD_ID=$(jq -r '.id' eas-output.json)
+          echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
 
       - name: Wait for build and download artifact
         if: always()
         run: |
-          # Get the build ID from the previous step
-          BUILD_ID=$(eas build:list --platform android --limit 1 --json | jq -r '.[0].id')
-          if [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ]; then
+          BUILD_ID="${{ steps.eas_build.outputs.build_id }}"
+          if [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ] && [ "$BUILD_ID" != "" ]; then
             echo "Build ID: $BUILD_ID"
-            eas build:view "$BUILD_ID" --json > build-info.json
-            ARTIFACT_URL=$(jq -r '.artifacts.buildUrl' build-info.json)
-            if [ "$ARTIFACT_URL" != "null" ] && [ -n "$ARTIFACT_URL" ]; then
+            # Poll for completion
+            for i in {1..60}; do
+              eas build:view "${BUILD_ID}" --json > build-info.json 2>/dev/null || true
+              STATUS=$(jq -r '.status' build-info.json 2>/dev/null || echo "unknown")
+              echo "Build status: $STATUS"
+              if [ "$STATUS" = "finished" ] || [ "$STATUS" = "errored" ] || [ "$STATUS" = "canceled" ]; then
+                break
+              fi
+              sleep 60
+            done
+            eas build:view "${BUILD_ID}" --json > build-info.json
+            cat build-info.json
+            ARTIFACT_URL=$(jq -r '.artifacts.buildUrl' build-info.json 2>/dev/null)
+            if [ "$ARTIFACT_URL" != "null" ] && [ -n "$ARTIFACT_URL" ] && [ "$ARTIFACT_URL" != "" ]; then
               curl -L "$ARTIFACT_URL" -o app-debug.apk
               echo "APK downloaded successfully"
             else
-              echo "Build still in progress or failed. Check EAS dashboard."
+              echo "No artifact URL found or build failed"
               cat build-info.json
             fi
           else
-            echo "Could not determine build ID"
+            echo "No build ID available"
           fi
 
       - name: Upload APK artifact
