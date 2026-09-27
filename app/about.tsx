@@ -13,7 +13,7 @@ export default function About() {
     <ScreenContainer style={styles.container}>
       <View style={[styles.headerCard, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant }]}>
         <View style={[styles.iconWrap, { backgroundColor: t.primaryContainer }]}>
-          <Icon name="Box" size={40} color={t.onPrimaryContainer} strokeWidth={2} />
+          <Icon name="mdi-cube" size={40} color={t.onPrimaryContainer} strokeWidth={2} />
         </View>
         <Text style={[styles.title, { color: t.text }]}>{tr.about.title}</Text>
         <Text style={[styles.body, { color: t.text }]}>

@@ -14,7 +14,7 @@ import {
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as Lucide from "lucide-react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeProvider";
 import { radius, spacing, typography, shadows } from "../theme";
 
@@ -41,16 +41,22 @@ export function Icon({
   fill?: string;
 }) {
   const t = useTheme();
-  const Cmp = (Lucide as unknown as Record<string, React.ComponentType<any>>)[
-    name
-  ];
-  if (!Cmp) return null;
+  const isMaterial = name.startsWith("mdi-");
+  const iconName = isMaterial ? name.slice(4) : name;
+  if (isMaterial) {
+    return (
+      <MaterialCommunityIcons
+        name={iconName}
+        size={size}
+        color={color ?? t.text}
+      />
+    );
+  }
   return (
-    <Cmp
+    <Ionicons
+      name={iconName}
       size={size}
       color={color ?? t.text}
-      strokeWidth={strokeWidth}
-      fill={fill}
     />
   );
 }
@@ -149,19 +155,23 @@ export function IconButton({
   size?: number;
   btnSize?: number;
   variant?:
-    "surface" | "floating" | "ghost" | "flat" | "outlined" | "tonal" | "filled";
+    | "surface"
+    | "floating"
+    | "ghost"
+    | "flat"
+    | "outlined"
+    | "tonal"
+    | "filled";
   style?: ViewStyle;
 }) {
   const t = useTheme();
 
-  // Material Design 3 Toggle Button & Standard Icon Button behavior
   let bg = "transparent";
   let fg = t.text;
   let hasBorder = false;
   let hasShadow = false;
 
   if (active) {
-    // M3 selected toggle state
     bg = t.primaryContainer;
     fg = t.onPrimaryContainer;
   } else {
@@ -377,8 +387,8 @@ export function Sheet({
           useNativeDriver: Platform.OS !== "web",
         }),
         Animated.timing(sc, {
-          toValue: 0.95,
-          duration: 140,
+          toValue: 1,
+          duration: 180,
           useNativeDriver: Platform.OS !== "web",
         }),
       ]).start(({ finished }) => {
@@ -451,7 +461,7 @@ export function Sheet({
                 <View />
               )}
               <IconButton
-                name="X"
+                name="close"
                 size={18}
                 btnSize={36}
                 variant="ghost"
@@ -479,7 +489,7 @@ export function Sheet({
                   <View />
                 )}
                 <IconButton
-                  name="X"
+                  name="close"
                   size={18}
                   btnSize={36}
                   variant="ghost"
@@ -611,7 +621,7 @@ const styles = StyleSheet.create({
   btnInner: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   btnText: {
     fontSize: typography.labelLarge.fontSize,
-    fontFamily: typography.labelLarge.fontFamily,
+    fontFamily: typography.title.fontFamily,
     fontWeight: "600",
     letterSpacing: 0.2,
   },

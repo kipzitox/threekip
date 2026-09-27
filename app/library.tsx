@@ -76,11 +76,11 @@ export default function Library() {
 
   const filters: { key: Filter; label: string; icon: string }[] = useMemo(
     () => [
-      { key: "all", label: tr.library.allProjects, icon: "LayoutGrid" },
-      { key: "recent", label: tr.library.recent, icon: "Clock" },
-      { key: "favorites", label: tr.library.favorites, icon: "Star" },
-      { key: "shared", label: tr.library.shared, icon: "Share2" },
-      { key: "trash", label: tr.library.trash, icon: "Trash2" },
+      { key: "all", label: tr.library.allProjects, icon: "mdi-grid" },
+      { key: "recent", label: tr.library.recent, icon: "mdi-clock" },
+      { key: "favorites", label: tr.library.favorites, icon: "mdi-star" },
+      { key: "shared", label: tr.library.shared, icon: "mdi-share-variant" },
+      { key: "trash", label: tr.library.trash, icon: "mdi-trash-can" },
     ],
     [tr],
   );
@@ -178,12 +178,7 @@ export default function Library() {
                 { backgroundColor: t.primaryContainer },
               ]}
             >
-              <Icon
-                name="Boxes"
-                size={24}
-                color={t.onPrimaryContainer}
-                strokeWidth={2.2}
-              />
+              <Icon name="mdi-cube-outline" size={24} color={t.onPrimaryContainer} strokeWidth={2.2} />
             </View>
             <View>
               <Text style={[styles.brandName, { color: t.text }]}>
@@ -196,7 +191,7 @@ export default function Library() {
           </View>
           <View style={styles.headerActions}>
             <IconButton
-              name="Settings"
+              name="settings"
               size={20}
               btnSize={40}
               variant="surface"
@@ -216,7 +211,7 @@ export default function Library() {
               },
             ]}
           >
-            <Icon name="Search" size={18} color={t.textMuted} />
+            <Icon name="mdi-magnify" size={18} color={t.textMuted} />
             <TextInput
               style={[styles.searchInput, { color: t.text }]}
               placeholder={tr.library.searchPlaceholder}
@@ -226,20 +221,20 @@ export default function Library() {
             />
             {query.length > 0 && (
               <Pressable onPress={() => setQuery("")} hitSlop={8}>
-                <Icon name="X" size={16} color={t.textMuted} />
+                <Icon name="close" size={16} color={t.textMuted} />
               </Pressable>
             )}
           </View>
           <View style={styles.controlBtns}>
             <IconButton
-              name={sort === "name" ? "ArrowDownAZ" : "Clock"}
+              name={sort === "name" ? "mdi-sort-alphabetical-ascending" : "time"}
               size={18}
               btnSize={42}
               variant="surface"
               onPress={() => setSort(sort === "name" ? "date" : "name")}
             />
             <IconButton
-              name={viewMode === "grid" ? "List" : "LayoutGrid"}
+              name={viewMode === "grid" ? "format-list-bulleted" : "grid"}
               size={18}
               btnSize={42}
               variant="surface"
@@ -303,12 +298,7 @@ export default function Library() {
         ]}
         onPress={onNew}
       >
-        <Icon
-          name="Plus"
-          size={32}
-          color={t.onPrimaryContainer}
-          strokeWidth={3}
-        />
+        <Icon name="add" size={32} color={t.onPrimaryContainer} strokeWidth={3} />
       </Pressable>
 
       {/* Options menu */}
@@ -448,7 +438,7 @@ function ProjectCard({
             { backgroundColor: t.surfaceContainerHighest },
           ]}
         >
-          <Icon name="Box" size={24} color={t.primary} strokeWidth={2} />
+          <Icon name="mdi-cube" size={24} color={t.primary} strokeWidth={2} />
         </View>
         <View style={styles.rowMain}>
           <Text style={[styles.cardName, { color: t.text }]} numberOfLines={1}>
@@ -460,7 +450,7 @@ function ProjectCard({
           </Text>
         </View>
         <IconButton
-          name="MoreVertical"
+          name="dots-vertical"
           size={18}
           btnSize={36}
           variant="ghost"
@@ -486,7 +476,7 @@ function ProjectCard({
       <View
         style={[styles.thumb, { backgroundColor: t.surfaceContainerHighest }]}
       >
-        <Icon name="Box" size={48} color={t.primary} strokeWidth={1.5} />
+        <Icon name="mdi-cube" size={48} color={t.primary} strokeWidth={1.5} />
         {item.favorite ? (
           <View
             style={[
@@ -497,7 +487,7 @@ function ProjectCard({
               },
             ]}
           >
-            <Icon name="Star" size={13} color="#EAB308" fill="#EAB308" />
+            <Icon name="star" size={13} color="#EAB308" fill="#EAB308" />
           </View>
         ) : null}
         <Pressable
@@ -508,7 +498,7 @@ function ProjectCard({
           onPress={onOptions}
           hitSlop={8}
         >
-          <Icon name="MoreVertical" size={16} color={t.text} />
+          <Icon name="dots-vertical" size={16} color={t.text} />
         </Pressable>
       </View>
       <View style={styles.cardBody}>
@@ -588,14 +578,14 @@ function MenuActions({
   if (isTrash) {
     return (
       <View>
-        {action("FolderOpen", tr.library.restore, onRestore)}
-        {action("Trash2", tr.library.deleteForever, onPurge, true)}
+        {action("mdi-folder-open", tr.library.restore, onRestore)}
+        {action("mdi-trash-can", tr.library.deleteForever, onPurge, true)}
       </View>
     );
   }
   return (
     <View>
-      {action("FolderOpen", tr.library.open, onOpen)}
+      {action("mdi-folder-open", tr.library.open, onOpen)}
       {action("Pencil", tr.library.rename, onRename)}
       {action(
         "Star",

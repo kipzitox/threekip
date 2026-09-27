@@ -64,15 +64,7 @@ document.getElementById('bundo').addEventListener('click',undo);
 document.getElementById('bredo').addEventListener('click',redo);
 document.getElementById('pb-undo').addEventListener('click',undo);
 document.getElementById('pb-redo').addEventListener('click',redo);
-document.getElementById('bclear').addEventListener('click', function () {
-  if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-    try {
-      window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'requestClearConfirm' }));
-      return;
-    } catch (e) {}
-  }
-  if (confirm('Clear all strokes?')) clearAll();
-});
+document.getElementById('bclear').addEventListener('click',()=>{if(confirm('Clear all strokes?'))clearAll();});
 
 // Visibility — sidebar + narrow both wired
 document.getElementById('bsurf').addEventListener('click',function(){surfGroup.visible=!surfGroup.visible;this.classList.toggle('on',surfGroup.visible);var pb=document.getElementById('pb-surf');if(pb)pb.classList.toggle('on',surfGroup.visible);markDirty();});

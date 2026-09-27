@@ -55,8 +55,6 @@ body.ui-hidden #lcl-float-group{bottom:52px}
 .lbtn:hover{background:rgba(var(--ink-rgb),.07);color:var(--ink)}
 .lbtn.active{background:rgba(var(--ink-rgb),.14);color:var(--ink);border-color:rgba(var(--ink-rgb),.35);font-weight:500}
 .ldot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.tb-lrow.dragging{opacity:0.4;background:var(--md-secondary-container-opt)}
-.tb-lrow.drag-over{border-top:2px solid var(--md-primary);margin-top:-2px}
 
 /* ── STATUS BAR ── */
 #sbar{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);font-size:7.5px;color:var(--mut);

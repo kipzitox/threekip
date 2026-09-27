@@ -6,8 +6,6 @@
 
 var activeLayer = 0;
 var layerVisible = [true, true, true, true];
-var layerOpacity = [1.0, 1.0, 1.0, 1.0];
-var layerOrder = [0, 1, 2, 3]; // Default rendering order (index 0 is bottom, index 3 is top)
 
 function setActiveLayer(i) {
   activeLayer = i;
@@ -23,62 +21,14 @@ function setActiveLayer(i) {
 function setLayerVisible(i, v) {
   layerVisible[i] = v;
   var tbeye = document.getElementById('tb-leye' + i);
-  if (tbeye) {
-    tbeye.classList.toggle('vis', v);
-    tbeye.classList.toggle('hidden-eye', !v);
-    var openIcon = tbeye.querySelector('.icon-eye-open');
-    var closedIcon = tbeye.querySelector('.icon-eye-closed');
-    if (openIcon && closedIcon) {
-      openIcon.style.display = v ? 'block' : 'none';
-      closedIcon.style.display = v ? 'none' : 'block';
-    } else {
-      tbeye.textContent = v ? '◉' : '○';
-    }
-  }
+  if (tbeye) { tbeye.textContent = v ? '◉' : '○'; tbeye.classList.toggle('vis', v); }
   applyLayerVisibility();
-}
-
-function setLayerOpacity(i, v) {
-  var op = Math.max(0, Math.min(1, parseFloat(v)));
-  layerOpacity[i] = op;
-  var valSpan = document.getElementById('tb-lopac-val' + i);
-  if (valSpan) valSpan.textContent = Math.round(op * 100) + '%';
-  var slider = document.getElementById('tb-lopac' + i);
-  if (slider && Math.abs((parseFloat(slider.value) / 100) - op) > 0.001) {
-    slider.value = Math.round(op * 100);
-  }
-  applyLayerVisibility();
-  if (window.SketchbookEventBus) window.SketchbookEventBus.emit('layerOpacityChanged', { index: i, opacity: op, layerOpacity: layerOpacity });
 }
 
 function applyLayerVisibility() {
   strokes.forEach(function (s) {
     var layer = s.layer != null ? s.layer : 1;
     s.mesh.visible = layerVisible[layer] !== false;
-    
-    // Set renderOrder based on layer position in layerOrder array.
-    var orderIdx = layerOrder.indexOf(layer);
-    s.mesh.renderOrder = orderIdx + 3; // +3 to stay above default grid/axis if they use lower orders
-
-    var lOp = layerOpacity[layer] != null ? layerOpacity[layer] : 1.0;
-
-    s.mesh.traverse(function (c) {
-      if (c.isMesh && c.material) {
-        if (c.material._baseOpacity === undefined) {
-          c.material._baseOpacity = (c.material.opacity != null ? c.material.opacity : (s.op != null ? s.op : 1.0));
-        }
-        var targetOp = c.material._baseOpacity * lOp;
-        if (!c.userData.hasUniqueMat && lOp < 0.999) {
-          c.material = c.material.clone();
-          c.userData.hasUniqueMat = true;
-        }
-        if (Math.abs(c.material.opacity - targetOp) > 0.001) {
-          c.material.opacity = targetOp;
-          c.material.transparent = targetOp < 0.999;
-          c.material.needsUpdate = true;
-        }
-      }
-    });
   });
   markDirty();
 }
@@ -91,10 +41,6 @@ function showMergeLayerRow(show) {
 function mergeLayer(srcLayer) {
   var toMerge = strokes.filter(function (s) { return (s.layer != null ? s.layer : 1) === srcLayer; });
   if (!toMerge.length) { toast('Nothing on layer'); return; }
-
-  if (!confirm('Are you sure you want to merge this layer? All individual strokes on this layer will be permanently combined into the "Merged" layer.')) {
-    return;
-  }
 
   var mergedGroup = new THREE.Group();
   toMerge.forEach(function (s) {
@@ -145,26 +91,14 @@ function mergeLayer(srcLayer) {
 [0, 1, 2, 3].forEach(function (i) {
   var tblb = document.getElementById('tb-lrow' + i);
   if (tblb) tblb.addEventListener('click', function (e) {
-    if (e.target.closest('.tb-leye') || e.target.closest('.tb-merge') || e.target.closest('.tb-lgrip') || e.target.closest('.tb-lslider')) return;
+    if (e.target === document.getElementById('tb-leye' + i)) return;
+    if (e.target === document.getElementById('tb-merge' + i)) return;
     setActiveLayer(i);
   });
   var tbeye = document.getElementById('tb-leye' + i);
   if (tbeye) tbeye.addEventListener('click', function (e) { e.stopPropagation(); setLayerVisible(i, !layerVisible[i]); });
   var tbmerge = document.getElementById('tb-merge' + i);
   if (tbmerge) tbmerge.addEventListener('click', function (e) { e.stopPropagation(); mergeLayer(i); });
-  var slider = document.getElementById('tb-lopac' + i);
-  if (slider) {
-    slider.addEventListener('input', function (e) {
-      e.stopPropagation();
-      setLayerOpacity(i, parseFloat(this.value) / 100);
-    });
-    slider.addEventListener('change', function (e) {
-      e.stopPropagation();
-      setLayerOpacity(i, parseFloat(this.value) / 100);
-    });
-    slider.addEventListener('mousedown', function (e) { e.stopPropagation(); });
-    slider.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
-  }
 });
 
 // Topbar LAYERS button IIFE
@@ -172,66 +106,6 @@ function mergeLayer(srcLayer) {
   var btn = document.getElementById('blayers');
   var pop = document.getElementById('layers-pop');
   if (!btn || !pop) return;
-
-  function updateLayerListUI() {
-    var header = pop.querySelector('.layers-pop-header');
-    var rows = Array.from(pop.querySelectorAll('.tb-lrow'));
-    rows.sort(function (a, b) {
-      var la = parseInt(a.getAttribute('data-layer'));
-      var lb = parseInt(b.getAttribute('data-layer'));
-      return layerOrder.indexOf(lb) - layerOrder.indexOf(la);
-    });
-    pop.innerHTML = '';
-    if (header) pop.appendChild(header);
-    rows.forEach(function (row) { pop.appendChild(row); });
-  }
-
-  // Initialize draggable rows
-  [0, 1, 2, 3].forEach(function (i) {
-    var row = document.getElementById('tb-lrow' + i);
-    if (row) {
-      row.setAttribute('draggable', 'true');
-      row.addEventListener('dragstart', function (e) {
-        if (e.target.closest('.tb-leye') || e.target.closest('.tb-merge')) {
-          e.preventDefault();
-          return;
-        }
-        e.dataTransfer.setData('text/plain', i);
-        row.classList.add('dragging');
-      });
-      row.addEventListener('dragend', function () {
-        row.classList.remove('dragging');
-        pop.querySelectorAll('.tb-lrow').forEach(function (r) { r.classList.remove('drag-over'); });
-      });
-      row.addEventListener('dragover', function (e) {
-        e.preventDefault();
-        row.classList.add('drag-over');
-      });
-      row.addEventListener('dragleave', function () {
-        row.classList.remove('drag-over');
-      });
-      row.addEventListener('drop', function (e) {
-        e.preventDefault();
-        var draggedLayer = parseInt(e.dataTransfer.getData('text/plain'));
-        var targetLayer = parseInt(row.getAttribute('data-layer'));
-        if (draggedLayer === targetLayer) return;
-
-        var oldIdx = layerOrder.indexOf(draggedLayer);
-        var newIdx = layerOrder.indexOf(targetLayer);
-
-        layerOrder.splice(oldIdx, 1);
-        layerOrder.splice(newIdx, 0, draggedLayer);
-
-        updateLayerListUI();
-        applyLayerVisibility();
-        if (window.SketchbookEventBus) window.SketchbookEventBus.emit('layerOrderChanged', { order: layerOrder });
-      });
-    }
-  });
-
-  // Initial sort
-  updateLayerListUI();
-
   function openLayersPop(trigger) {
     pop.classList.add('open');
     btn.classList.add('on');

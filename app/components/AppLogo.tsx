@@ -20,7 +20,7 @@ export function AppLogo({ size = 96 }: { size?: number }) {
         },
       ]}
     >
-      <Icon name="Box" size={size * 0.46} color={t.onPrimary} strokeWidth={2.2} />
+      <Icon name="mdi-cube" size={size * 0.46} color={t.onPrimary} strokeWidth={2.2} />
     </View>
   );
 }

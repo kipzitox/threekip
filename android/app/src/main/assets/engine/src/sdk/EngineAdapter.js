@@ -229,20 +229,6 @@ class EngineAdapter {
     return [true, true, true, true];
   }
 
-  setLayerOpacity(index, opacity) {
-    if (typeof setLayerOpacity === 'function') {
-      setLayerOpacity(index, opacity);
-      this._emit('layerChanged', { layerOpacity: this.getLayerOpacity() });
-    }
-  }
-
-  getLayerOpacity() {
-    if (typeof layerOpacity !== 'undefined') {
-      return [...layerOpacity];
-    }
-    return [1.0, 1.0, 1.0, 1.0];
-  }
-
   // Pages
   addPage() {
     if (typeof addPage === 'function') {

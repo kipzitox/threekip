@@ -21,7 +21,7 @@
   --md-on-error:#FFFFFF;
   --md-error-container:#F9DEDC;
   --md-on-error-container:#410E0B;
-  --md-surface:#FFFFFF;
+  --md-surface:#FEF7FF;
   --md-on-surface:#1D1B20;
   --md-surface-variant:#E7E0EC;
   --md-on-surface-variant:#49454F;
@@ -33,11 +33,11 @@
   --md-scrim:rgba(0,0,0,.4);
 
   /* legacy remap */
-  --bg:#FFFFFF;
+  --bg:#FEF7FF;
   --bdr:var(--md-outline-variant);
   --ink:#1D1B20;
   --mut:var(--md-on-surface-variant);
-  --pan:rgba(255,255,255,.92);
+  --pan:rgba(254,247,255,.92);
   --ink-rgb:29,27,32;
   --tr:all .1s;
 

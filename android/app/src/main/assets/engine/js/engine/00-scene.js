@@ -13,8 +13,8 @@ document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, {
 
 const container=document.getElementById('cc');
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0xffffff);
-scene.fog=new THREE.FogExp2(0xffffff,.012);
+scene.background=new THREE.Color(0xcdb899);
+scene.fog=new THREE.FogExp2(0xcdb899,.012);
 const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.01,2000);
 let orthoZoom=8;
 const ortho=new THREE.OrthographicCamera(-orthoZoom,orthoZoom,orthoZoom,-orthoZoom,.01,2000);
@@ -23,7 +23,7 @@ function activeCam(){return useOrtho?ortho:camera;}
 const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
-renderer.setClearColor(0xffffff,1);
+renderer.setClearColor(0xcdb899,1);
 renderer.sortObjects=true;
 container.appendChild(renderer.domElement);
 
@@ -32,7 +32,7 @@ let _renderDirty=true;
 function markDirty(){_renderDirty=true;}
 scene.add(new THREE.AmbientLight(0xffffff,.9));
 const sun=new THREE.DirectionalLight(0xffffff,.5);sun.position.set(5,4,8);scene.add(sun);
-const gridH=new THREE.GridHelper(20,20,0x000000,0x222222);gridH.rotation.x=Math.PI/2;scene.add(gridH);
+const gridH=new THREE.GridHelper(20,20,0xa08858,0xc8aa78);gridH.rotation.x=Math.PI/2;scene.add(gridH);
 const axisGroup=new THREE.Group();scene.add(axisGroup);
 (function(){const L=8;[[new THREE.Vector3(L,0,0),'#e03040'],[new THREE.Vector3(0,L,0),'#22bb55'],[new THREE.Vector3(0,0,L),'#3377ee']].forEach(([tip,col])=>{const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),tip]);axisGroup.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:.55})));const g2=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),tip.clone().negate()]);axisGroup.add(new THREE.Line(g2,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:.18})));});})();
 let axisLinesOn=true;
@@ -103,7 +103,7 @@ function updateScaleBarLabel(){
 
 // ── Surface ──────────────────────────────────────────────────────
 const PNORMALS={xy:new THREE.Vector3(0,0,1),xz:new THREE.Vector3(0,1,0),yz:new THREE.Vector3(1,0,0)};
-const SURF_TRACE=0x000000;
+const SURF_TRACE=0x7a5c3a;
 let curPlane='xz',surfType='plane';
 const surfPos=new THREE.Vector3(),surfEuler=new THREE.Euler(0,0,0,'XYZ');
 let surfScale=2.0;const surfScaleAxes=new THREE.Vector3(1,1,1);
@@ -125,11 +125,11 @@ function buildSurfGridTex(){
   var ctx=cv.getContext('2d');
   ctx.clearRect(0,0,sz,sz);
   if(_surfGridMode===1){
-    ctx.strokeStyle='rgba(0,0,0,0.7)';ctx.lineWidth=1;
+    ctx.strokeStyle='rgba(100,68,38,0.7)';ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(sz,0);ctx.stroke();
     ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,sz);ctx.stroke();
   } else if(_surfGridMode===2){
-    ctx.fillStyle='rgba(0,0,0,0.85)';var r=3;
+    ctx.fillStyle='rgba(110,75,42,0.85)';var r=3;
     ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.arc(sz,0,r,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.arc(0,sz,r,0,Math.PI*2);ctx.fill();
@@ -179,7 +179,7 @@ function buildSurf(){
   else if(surfType==='cylinder')fgeo=new THREE.CylinderGeometry(1.52,1.52,3.04,48);
   else if(surfType==='cone')fgeo=new THREE.ConeGeometry(1.52,3.04,48);
   else fgeo=new THREE.SphereGeometry(1.82,48,32);
-  var bgHex=scene.background?('#'+scene.background.getHexString()):'#ffffff';
+  var bgHex=scene.background?('#'+scene.background.getHexString()):'#cdb899';
   _frostedMat=new THREE.MeshBasicMaterial({
     color:new THREE.Color(bgHex),
     transparent:true,opacity:_depthOpSteps[_depthOpIdx],

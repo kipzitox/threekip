@@ -105,7 +105,7 @@ function checkHover(px,py){
 
 // ── Depth system — frosted glass (v5.6) ──────────────────────────
 // Depth cue is now the _frostedMesh in surfGroup. No per-vertex recoloring.
-const BG_COL=new THREE.Color(0xffffff);
+const BG_COL=new THREE.Color(0xcdb899);
 function getDrawPlane(){const n=new THREE.Vector3(0,0,1).applyQuaternion(surfGroup.quaternion);return{n,d:n.dot(surfPos)};}
 function signedDist(pt,plane){return plane.n.dot(pt)-plane.d;}
 // Stubs kept for undo/redo references
@@ -217,7 +217,7 @@ function buildTube(pts,vels,color,sz,op,flat){
     }
     for(let i=0;i<segs;i++){const b=i*4;idx.push(b,b+4,b+1,b+1,b+4,b+5,b+2,b+3,b+6,b+3,b+7,b+6,b,b+2,b+4,b+2,b+6,b+4,b+1,b+5,b+3,b+3,b+5,b+7);}
     const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('normal',new THREE.Float32BufferAttribute(norms,3));geo.setIndex(idx);geo.computeVertexNormals();
-    const m=new THREE.Mesh(geo,mat);m.userData.radSeg=4;return m;
+    const m=new THREE.Mesh(geo,mat);m.renderOrder=3;m.userData.radSeg=4;return m;
   }
   try{
     const curve=new THREE.CatmullRomCurve3(f),segs=Math.max(N*3,12),radSeg=Math.min(8,Math.max(5,segs>>2));
@@ -239,7 +239,7 @@ function buildTube(pts,vels,color,sz,op,flat){
       for(let s=0;s<radSeg;s++){const vi=rs+s;if(vi>=pa.count)break;pa.setXYZ(vi,cx+(pa.getX(vi)-cx)*sc,cy+(pa.getY(vi)-cy)*sc,cz+(pa.getZ(vi)-cz)*sc);}
     }
     pa.needsUpdate=true;geo.computeVertexNormals();
-    const m=new THREE.Mesh(geo,mat);m.userData.radSeg=radSeg;return m;
+    const m=new THREE.Mesh(geo,mat);m.renderOrder=3;m.userData.radSeg=radSeg;return m;
   }catch(e){return null;}
 }
 
@@ -248,5 +248,5 @@ function buildCap(pt,color,sz,op){
   const r=sz*.011;
   const mat=getStrokeMatForMesh(color,op,false);
   const m=new THREE.Mesh(new THREE.SphereGeometry(r,8,6),mat);
-  m.position.copy(pt);return m;
+  m.position.copy(pt);m.renderOrder=3;return m;
 }

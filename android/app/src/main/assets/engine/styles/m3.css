@@ -11,7 +11,7 @@
 .card{border-radius:var(--shp-lg);box-shadow:var(--elev-1)}
 .sc-group{border-radius:var(--shp-lg);box-shadow:var(--elev-1)}
 .sc-group.detached{box-shadow:var(--elev-3)}
-#topbar{display:none!important}
+#topbar{border-radius:var(--shp-full);box-shadow:var(--elev-1)}
 #stab{box-shadow:var(--elev-1);border-radius:var(--shp-md)}
 #bhide,#bviews-hidden,#sc-hidden-toggle{border-radius:var(--shp-sm)}
 #sc-hidden-bar{border-radius:var(--shp-full);box-shadow:var(--elev-2)}
