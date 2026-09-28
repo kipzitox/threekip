@@ -17,6 +17,12 @@ apk-check/
 icon-tmp/
 *.log
 *.apk
+*.txt
+*.ps1
+build/
+.gradle/
+*.txt
+*.ps1
 
 # Keys / signing / secrets
 *.jks

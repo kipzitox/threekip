@@ -33,15 +33,6 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "backgroundColor": "#ffffff",
-          "image": "./assets/engine/icon-512.png",
-          "imageWidth": 200,
-          "resizeMode": "contain"
-        }
-      ],
       "./plugins/withEngineAssets.js"
     ],
     "extra": {
