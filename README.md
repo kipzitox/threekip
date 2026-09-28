@@ -1,6 +1,6 @@
 # ThreeKip
 
-Aplicacion Android de dibujo 3D profesional con interfaz Material Design 3,
+Aplicacion movil Android de dibujo 3D profesional con interfaz Material Design 3,
 construida con Expo / React Native (SDK 52) y un motor Three.js que corre
 offline dentro de un WebView (sin servidor, sin internet).
 
@@ -8,12 +8,35 @@ La interfaz nativa expone todas las funciones del editor (dibujar, capas,
 deshacer/rehacer, exportar PNG y modelos, cargar/guardar proyectos, Loft,
 fusionar capas) sin modificar el motor.
 
-## Identidad de la aplicacion
+El proyecto se organiza en dos capas principales:
 
-- Nombre: ThreeKip
-- Slug: threekip
-- Package (Android): com.threekip.app
-- Proyecto EAS: @mgh.example/threekip
+1. **UI nativa (React Native + MD3):** Pantallas, navegacion, temas, gestos y
+   accesibilidad. Es la capa visible y la unica que interactua con el usuario.
+2. **Motor 3D (Three.js embebido):** Renderizado, geometria, herramientas,
+   capas, historial y persistencia. Vive como assets estaticos y se ejecuta
+   dentro de un WebView, completamente offline.
+
+El puente entre ambas capas usa eventos y comandos, de modo que el motor puede
+sustituirse sin tocar la UI y viceversa.
+
+## Funcionalidades clave
+
+- Dibujo 3D en tiempo real con Three.js (geometria, camaras, gizmos)
+- Sistema de capas para organizar la escena
+- Historial de deshacer/rehacer (Undo/Redo)
+- Exportacion de capturas PNG y modelos 3D
+- Carga y guardado de proyectos locales
+- Loft (superficies generadas a partir de perfiles)
+- Fusion de capas para optimizar la escena
+- Interfaz responsive (telefono y tablet, horizontal y vertical)
+- Persistencia offline sin backend
+
+## Plataformas
+
+| Plataforma | Estado        | Notas                                      |
+|------------|---------------|--------------------------------------------|
+| Web        | Desplegada    | GitHub Pages: https://kipzitox.github.io/threekip/ |
+| Android    | En desarrollo | APK mediante EAS Build o compilacion local |
 
 ## Requisitos
 
@@ -23,6 +46,12 @@ fusionar capas) sin modificar el motor.
 
 > No se necesita JDK ni Android SDK si se usa EAS Build en la nube.
 > Solo se requieren para compilacion local.
+
+## Despliegue Web
+
+| Plataforma | Estado | URL |
+|------------|--------|-----|
+| Web (GitHub Pages) | Desplegado | https://kipzitox.github.io/threekip/ |
 
 ## Compilar el APK con EAS Build (en la nube)
 
@@ -38,6 +67,12 @@ codigo QR (en `eas build --platform android`) para descargar e instalar el `.apk
 
 - Listar builds: `eas build:list --platform android`
 - Ver detalles de un build: `eas build:view <id>`
+
+## Despliegue Web
+
+| Plataforma | Estado | URL |
+|------------|--------|-----|
+| Web (GitHub Pages) | Desplegado | https://kipzitox.github.io/threekip/ |
 
 ## Scripts disponibles
 
