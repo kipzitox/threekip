@@ -14,7 +14,7 @@
 .fc-hdr-btn.lit{border-color:var(--ink);opacity:.7}
 
 #toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(6px);
-  background:rgba(var(--ink-rgb),.85);color:#e8dcc8;font-size:8px;letter-spacing:.06em;
+  background:rgba(var(--ink-rgb),.85);color:var(--bg);font-size:8px;letter-spacing:.06em;
   padding:5px 12px;border-radius:20px;z-index:500;pointer-events:none;opacity:0;
   transition:opacity .15s,transform .15s;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
