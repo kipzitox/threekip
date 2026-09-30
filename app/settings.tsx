@@ -141,7 +141,7 @@ export default function Settings() {
             hint={tr.settings.resetCamHint}
           />
           <Row
-            icon="AlertTriangle"
+            icon="TriangleAlert"
             label={tr.settings.confirmExitLabel}
             value={confirmExit}
             onValueChange={setConfirmExit}

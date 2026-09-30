@@ -35,8 +35,8 @@ sustituirse sin tocar la UI y viceversa.
 
 | Plataforma | Estado        | Notas                                      |
 |------------|---------------|--------------------------------------------|
-| Web        | Desplegada    | GitHub Pages: https://kipzitox.github.io/threekip/ |
-| Android    | En desarrollo | APK mediante EAS Build o compilacion local |
+| Web        | Sin desplegar | Requiere servidor Node (ver "Despliegue Web") |
+| Android    | Funcional     | APK debug generado localmente              |
 
 ## Requisitos
 
@@ -49,9 +49,19 @@ sustituirse sin tocar la UI y viceversa.
 
 ## Despliegue Web
 
-| Plataforma | Estado | URL |
-|------------|--------|-----|
-| Web (GitHub Pages) | Desplegado | https://kipzitox.github.io/threekip/ |
+El build web **no se puede publicar en GitHub Pages**: ademas del export estatico,
+el editor necesita el motor 3D completo, y `server.ts` lo sirve desde disco en
+`android/app/src/main/assets/engine`. Un host estatico no puede ejecutar ese
+servidor, por lo que `/engine/index.html` daria 404.
+
+La via que si funciona es el servidor Node incluido:
+
+```bash
+npm run build   # export web a dist-web + compila server.ts a dist/server.cjs
+npm start       # sirve en http://localhost:3000
+```
+
+`server.ts` expone el export web en `/` y el motor en `/engine`.
 
 ## Compilar el APK con EAS Build (en la nube)
 
@@ -67,12 +77,6 @@ codigo QR (en `eas build --platform android`) para descargar e instalar el `.apk
 
 - Listar builds: `eas build:list --platform android`
 - Ver detalles de un build: `eas build:view <id>`
-
-## Despliegue Web
-
-| Plataforma | Estado | URL |
-|------------|--------|-----|
-| Web (GitHub Pages) | Desplegado | https://kipzitox.github.io/threekip/ |
 
 ## Scripts disponibles
 

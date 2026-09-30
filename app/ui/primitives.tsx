@@ -14,9 +14,14 @@ import {
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import type { ComponentProps } from "react";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../theme/ThemeProvider";
 import { radius, spacing, typography, shadows } from "../theme";
+import { lucideIcons } from "./lucide-icons";
+
+type MdiName = ComponentProps<typeof MaterialCommunityIcons>["name"];
+type IonName = ComponentProps<typeof Ionicons>["name"];
 
 const shadowStyles = StyleSheet.create({
   sm: shadows.sm,
@@ -27,6 +32,46 @@ const shadowStyles = StyleSheet.create({
   level3: shadows.level3,
 });
 
+const glyphMapOf = (set: { glyphMap?: Record<string, unknown> }) =>
+  (set.glyphMap ?? {}) as Record<string, unknown>;
+
+/**
+ * Nombre que no pertenece a ninguna de las tres familias. En __DEV__ avisamos
+ * porque un nombre mal escrito no lanza error: se renderiza un icono vacio y
+ * el fallo solo se ve en pantalla. Fuera de __DEV__ no se comprueba nada.
+ */
+function warnIfUnknownIcon(name: string): void {
+  if (!__DEV__) return;
+  const known =
+    (name in lucideIcons) ||
+    (name in glyphMapOf(Ionicons as unknown as { glyphMap?: Record<string, unknown> })) ||
+    (name.slice(4) in
+      glyphMapOf(
+        MaterialCommunityIcons as unknown as {
+          glyphMap?: Record<string, unknown>;
+        },
+      ));
+  if (!known) {
+    console.warn(
+      `[Icon] "${name}" no existe en lucide, Ionicons ni MaterialCommunityIcons; se dibujara vacio.`,
+    );
+  }
+}
+
+/**
+ * Resuelve un nombre de icono a una de las tres familias que usa la app:
+ *
+ *   - "mdi-cube"  -> MaterialCommunityIcons (prefijo "mdi-")
+ *   - "Box"       -> lucide-react-native (PascalCase, ver ./lucide-icons)
+ *   - "close"     -> Ionicons (kebab-case, el resto)
+ *
+ * El orden importa: lucide usa PascalCase e Ionicons usa kebab-case, asi que
+ * "Star" (lucide) y "star" (Ionicons) conviven sin colision.
+ *
+ * Antes esta resolucion solo cubria MaterialCommunityIcons e Ionicons, por lo
+ * que los ~40 iconos de lucide se pasaban a Ionicons con un nombre invalido y
+ * se renderizaban vacios (solo aparecia un aviso en __DEV__).
+ */
 export function Icon({
   name,
   size = 20,
@@ -41,24 +86,42 @@ export function Icon({
   fill?: string;
 }) {
   const t = useTheme();
-  const isMaterial = name.startsWith("mdi-");
-  const iconName = isMaterial ? name.slice(4) : name;
-  if (isMaterial) {
+  const fg = color ?? t.text;
+
+  warnIfUnknownIcon(name);
+
+  if (name.startsWith("mdi-")) {
     return (
       <MaterialCommunityIcons
-        name={iconName}
+        name={name.slice(4) as MdiName}
         size={size}
-        color={color ?? t.text}
+        color={fg}
       />
     );
   }
-  return (
-    <Ionicons
-      name={iconName}
-      size={size}
-      color={color ?? t.text}
-    />
-  );
+
+  const LucideIcon =
+    lucideIcons[name as keyof typeof lucideIcons] as
+      | React.ComponentType<{
+          size?: number;
+          color?: string;
+          strokeWidth?: number;
+          fill?: string;
+        }>
+      | undefined;
+
+  if (LucideIcon) {
+    return (
+      <LucideIcon
+        size={size}
+        color={fg}
+        strokeWidth={strokeWidth}
+        fill={fill ?? "none"}
+      />
+    );
+  }
+
+  return <Ionicons name={name as IonName} size={size} color={fg} />;
 }
 
 type BtnVariant =

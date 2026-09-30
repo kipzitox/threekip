@@ -234,7 +234,7 @@ export default function Library() {
               onPress={() => setSort(sort === "name" ? "date" : "name")}
             />
             <IconButton
-              name={viewMode === "grid" ? "format-list-bulleted" : "grid"}
+              name={viewMode === "grid" ? "list" : "grid"}
               size={18}
               btnSize={42}
               variant="surface"
@@ -450,7 +450,7 @@ function ProjectCard({
           </Text>
         </View>
         <IconButton
-          name="dots-vertical"
+          name="mdi-dots-vertical"
           size={18}
           btnSize={36}
           variant="ghost"
@@ -498,7 +498,7 @@ function ProjectCard({
           onPress={onOptions}
           hitSlop={8}
         >
-          <Icon name="dots-vertical" size={16} color={t.text} />
+          <Icon name="mdi-dots-vertical" size={16} color={t.text} />
         </Pressable>
       </View>
       <View style={styles.cardBody}>
