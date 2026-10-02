@@ -1,7 +1,10 @@
 import { Platform } from 'react-native';
 import type { ProjectMeta, ProjectFile, ExportFile } from '../stores/ProjectStore';
 
-const isWeb = Platform.OS === 'web' || typeof window !== 'undefined';
+// Must be Platform-only. React Native defines a global `window` (alias of
+// `global`), so a `typeof window !== 'undefined'` test is also true on Android
+// and iOS, which silently routed every storage call to the localStorage branch.
+const isWeb = Platform.OS === 'web';
 
 // Safe lazy accessor for native expo-file-system on Android / iOS only
 function getNativeFS(): typeof import('expo-file-system') | null {

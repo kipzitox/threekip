@@ -74,6 +74,10 @@ export const translations = {
       importSuccess: 'Proyecto importado correctamente',
       importErrorTitle: 'Error al importar',
       importErrorMessage: 'No se pudo importar el archivo seleccionado.',
+      actionErrorTitle: 'Error',
+      openError: 'No se pudo abrir el proyecto.',
+      createError: 'No se pudo crear el proyecto.',
+      modifyError: 'No se pudo completar la acción sobre el proyecto.',
       copySuffix: '(Copia)',
     },
     editor: {
@@ -226,7 +230,7 @@ export const translations = {
       title: 'ThreeKip',
       subtitle: 'Aplicación profesional de modelado y dibujo 3D.',
       runtimeDesc: 'El motor 3D se ejecuta con aceleración gráfica completa y desacoplado de la interfaz de usuario.',
-      version: 'Versión 1.0.0',
+      version: 'Versión 0.1.1',
     },
   },
   en: {
@@ -300,6 +304,10 @@ export const translations = {
       importSuccess: 'Project imported successfully',
       importErrorTitle: 'Import Error',
       importErrorMessage: 'Could not import the selected file.',
+      actionErrorTitle: 'Error',
+      openError: 'Could not open the project.',
+      createError: 'Could not create the project.',
+      modifyError: 'Could not complete that action on the project.',
       copySuffix: '(Copy)',
     },
     editor: {
@@ -452,7 +460,7 @@ export const translations = {
       title: 'ThreeKip',
       subtitle: 'Professional 3D modeling and sketch application.',
       runtimeDesc: 'The 3D engine runs fully hardware-accelerated inside React Native, completely decoupled from UI.',
-      version: 'Version 1.0.0',
+      version: 'Version 0.1.1',
     },
   },
 } as const;

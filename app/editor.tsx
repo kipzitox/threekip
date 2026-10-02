@@ -671,9 +671,14 @@ export default function Editor() {
   }, [bridge]);
 
   useEffect(() => {
+    const tr = getI18n();
+    // Guards against loadPending() running twice (once from the 'ready' event,
+    // once from the isReady() check at the end of this effect).
+    let loading = false;
     const loadPending = async () => {
       const id = useProjectStore.getState().pendingLoadId;
-      if (!id) return;
+      if (!id || loading) return;
+      loading = true;
       try {
         // NOTE: the engine's LoadProjectCommand throws if `data` is null, and the
         // engine otherwise restores its SHARED autosave slot (sk3d_auto) on boot.
@@ -682,19 +687,33 @@ export default function Editor() {
         let scene: unknown = {};
         if (id !== NEW_PROJECT_SENTINEL) {
           const file = await readProjectFile(id);
-          scene = file?.scene ?? {};
+          if (!file) {
+            // Reading failed. Do NOT send an empty scene: that looks exactly
+            // like the project's content was lost.
+            Alert.alert(tr.common.error, tr.library.openError);
+            loading = false;
+            return;
+          }
+          scene = file.scene ?? {};
         }
         await bridge.send('loadProject', { data: scene });
         reapplyLightBg();
       } catch (e) {
         console.error('[Editor] pending project load failed', e);
+        Alert.alert(tr.common.error, tr.library.openError);
       }
       useProjectStore.getState().setPendingLoad(null);
+      loading = false;
     };
     const offReady = bridge.on('ready', () => {
       setReady(true);
       loadPending();
       reapplyLightBg();
+    });
+    const offError = bridge.on('error', (e) => {
+      const msg = typeof e === 'string' ? e : tr.common.error;
+      console.error('[Editor] engine bridge error', e);
+      Alert.alert(tr.common.error, msg);
     });
     const offLoaded = bridge.on('projectLoaded', reapplyLightBg);
     const offPng = bridge.on('pngExport', (d) => {
@@ -709,13 +728,10 @@ export default function Editor() {
       loadPending();
       reapplyLightBg();
     }
-    const fallbackTimer = setTimeout(() => {
-      setReady(true);
-    }, 500);
 
     return () => {
-      clearTimeout(fallbackTimer);
       offReady();
+      offError();
       offLoaded();
       offPng();
       offFile();

@@ -26,13 +26,21 @@ export type WebViewHandleLike = {
 
 type EventListener = (data: unknown) => void;
 
+type PendingCommand = {
+  resolve: (v: unknown) => void;
+  reject: (e: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+};
+
+// Without a timeout a command whose reply never arrives leaves the promise
+// pending forever, so the awaiting UI handler hangs and its catch fallback
+// never runs — the button just looks dead.
+const COMMAND_TIMEOUT_MS = 8000;
+
 export class SketchbookBridge {
   private handle: WebViewHandleLike | null = null;
   private webRef: React.RefObject<WebViewHandleLike | any> | null = null;
-  private pending = new Map<
-    string,
-    { resolve: (v: unknown) => void; reject: (e: Error) => void }
-  >();
+  private pending = new Map<string, PendingCommand>();
   private listeners = new Map<string, Set<EventListener>>();
   private seq = 0;
   private _ready = false;
@@ -46,7 +54,10 @@ export class SketchbookBridge {
   }
   detach(): void {
     this.handle = null;
-    this.pending.forEach((p) => p.reject(new Error('Bridge detached')));
+    this.pending.forEach((p) => {
+      clearTimeout(p.timer);
+      p.reject(new Error('Bridge detached'));
+    });
     this.pending.clear();
   }
   isReady(): boolean {
@@ -85,12 +96,13 @@ export class SketchbookBridge {
       return;
     }
     if (msg.type === 'res') {
-      const r = msg as ResponseMessage;
-      const p = this.pending.get(r.id);
-      if (!p) return;
-      this.pending.delete(r.id);
-      if (r.ok) p.resolve(r.result);
-      else p.reject(new Error(r.error || 'Command failed'));
+      const res = msg as ResponseMessage;
+      const entry = this.pending.get(res.id);
+      if (!entry) return;
+      this.pending.delete(res.id);
+      clearTimeout(entry.timer);
+      if (res.ok) entry.resolve(res.result);
+      else entry.reject(new Error(res.error || 'Command failed'));
     }
   }
 
@@ -102,9 +114,14 @@ export class SketchbookBridge {
     const id = `c${++this.seq}`;
     const message: CommandMessage = { type: 'cmd', id, name, payload };
     return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error(`Command timed out: ${name}`));
+      }, COMMAND_TIMEOUT_MS);
       this.pending.set(id, {
         resolve: resolve as (v: unknown) => void,
         reject,
+        timer,
       });
       handle.postMessage!(JSON.stringify(message));
     });

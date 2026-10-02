@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AppProviders } from './providers';
 import { useI18n } from './i18n';
 import { useTheme } from './theme/ThemeProvider';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function NavigationStack() {
   const { t: tr } = useI18n();
@@ -40,7 +41,9 @@ export default function RootLayout() {
   return (
     <AppProviders>
       <StatusBar />
-      <NavigationStack />
+      <ErrorBoundary>
+        <NavigationStack />
+      </ErrorBoundary>
     </AppProviders>
   );
 }

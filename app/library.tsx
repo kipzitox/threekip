@@ -112,12 +112,26 @@ export default function Library() {
     return list2;
   }, [projects, filter, query, sort]);
 
+  const fail = (message: string) => (e: unknown) => {
+    console.error("[library] operation failed", e);
+    Alert.alert(tr.library.actionErrorTitle, message);
+  };
   const onOpen = async (id: string) => {
-    await open(id);
+    try {
+      await open(id);
+    } catch (e) {
+      fail(tr.library.openError)(e);
+      return;
+    }
     router.push("/editor");
   };
   const onNew = async () => {
-    await newProject(tr.library.untitled);
+    try {
+      await newProject(tr.library.untitled);
+    } catch (e) {
+      fail(tr.library.createError)(e);
+      return;
+    }
     router.push("/editor");
   };
   const onImport = async () => {
@@ -323,19 +337,35 @@ export default function Library() {
               setMenuId(null);
             }}
             onToggleFav={async () => {
-              await toggleFavorite(menuId);
+              try {
+                await toggleFavorite(menuId);
+              } catch (e) {
+                fail(tr.library.modifyError)(e);
+              }
               setMenuId(null);
             }}
             onDuplicate={async () => {
-              await duplicate(menuId);
+              try {
+                await duplicate(menuId);
+              } catch (e) {
+                fail(tr.library.modifyError)(e);
+              }
               setMenuId(null);
             }}
             onTrash={async () => {
-              await trash(menuId);
+              try {
+                await trash(menuId);
+              } catch (e) {
+                fail(tr.library.modifyError)(e);
+              }
               setMenuId(null);
             }}
             onRestore={async () => {
-              await restore(menuId);
+              try {
+                await restore(menuId);
+              } catch (e) {
+                fail(tr.library.modifyError)(e);
+              }
               setMenuId(null);
             }}
             onPurge={async () => {
@@ -348,7 +378,11 @@ export default function Library() {
                     text: tr.common.delete,
                     style: "destructive",
                     onPress: async () => {
-                      await purge(menuId);
+                      try {
+                        await purge(menuId);
+                      } catch (e) {
+                        fail(tr.library.modifyError)(e);
+                      }
                       setMenuId(null);
                     },
                   },
@@ -384,10 +418,15 @@ export default function Library() {
             <Button
               label={tr.common.save}
               onPress={async () => {
-                await rename(
-                  renaming.id,
-                  renaming.name.trim() || tr.library.untitled,
-                );
+                try {
+                  await rename(
+                    renaming.id,
+                    renaming.name.trim() || tr.library.untitled,
+                  );
+                } catch (e) {
+                  fail(tr.library.modifyError)(e);
+                  return;
+                }
                 setRenaming(null);
               }}
             />
