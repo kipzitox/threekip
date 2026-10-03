@@ -35,7 +35,19 @@ type PendingCommand = {
 // Without a timeout a command whose reply never arrives leaves the promise
 // pending forever, so the awaiting UI handler hangs and its catch fallback
 // never runs — the button just looks dead.
-const COMMAND_TIMEOUT_MS = 8000;
+const DEFAULT_COMMAND_TIMEOUT_MS = 15000;
+
+// Per-command budgets. Scene deserialisation and image/GLB rendering can
+// legitimately take tens of seconds on a mid-range phone, so a single flat
+// timeout would break exports that used to work. Callers may still override.
+const COMMAND_TIMEOUT_MS: Partial<Record<string, number>> = {
+  loadProject: 30000,
+  export: 120000,
+};
+
+function timeoutFor(name: string): number {
+  return COMMAND_TIMEOUT_MS[name] ?? DEFAULT_COMMAND_TIMEOUT_MS;
+}
 
 export class SketchbookBridge {
   private handle: WebViewHandleLike | null = null;
@@ -106,7 +118,11 @@ export class SketchbookBridge {
     }
   }
 
-  send<T = unknown>(name: CommandName, payload?: Record<string, unknown>): Promise<T> {
+  send<T = unknown>(
+    name: CommandName,
+    payload?: Record<string, unknown>,
+    timeoutMs?: number
+  ): Promise<T> {
     const handle = this.getHandle();
     if (!handle || typeof handle.postMessage !== 'function') {
       return Promise.reject(new Error('WebView not attached'));
@@ -117,7 +133,7 @@ export class SketchbookBridge {
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(new Error(`Command timed out: ${name}`));
-      }, COMMAND_TIMEOUT_MS);
+      }, timeoutMs ?? timeoutFor(name));
       this.pending.set(id, {
         resolve: resolve as (v: unknown) => void,
         reject,

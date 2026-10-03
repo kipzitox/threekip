@@ -105,6 +105,17 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   saveCurrent: async (scene, name) => {
     const state = get();
+    // The engine's saveProject() returns null when it cannot serialise the
+    // scene (see sdk.bundle.js SaveProjectCommand -> engine.saveProject()).
+    // Writing that null over an existing project would erase its content while
+    // the UI reported success. A genuinely empty scene is `{}`, not null, so
+    // refusing null here is safe: new projects are created by create(), which
+    // intentionally writes a null scene once.
+    if (scene === null || scene === undefined) {
+      throw new Error(
+        'Refusing to overwrite project with an empty scene: the engine returned no data'
+      );
+    }
     let meta: ProjectMeta;
     if (!state.currentProjectId) {
       meta = await state.create(name || 'Sin título');
@@ -180,7 +191,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   duplicate: async (id) => {
     const file = await copyProjectFile(id, newId());
-    if (!file) return null;
+    if (!file) throw new Error(`Project not found: ${id}`);
     const now = new Date().toISOString();
     const meta: ProjectMeta = {
       ...file.meta,

@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   Animated,
+  BackHandler,
   Easing,
   Platform,
   Modal,
@@ -108,7 +109,14 @@ export function EditorUI({
     try {
       const res = (await bridge.send("saveProject")) as
         { data?: unknown } | undefined;
-      await saveCurrent(res?.data ?? null);
+      const data = res?.data;
+      // Do not let an empty engine response overwrite the project on disk.
+      // saveCurrent() also guards this, but failing here keeps the error
+      // message specific about where it came from.
+      if (data === null || data === undefined) {
+        throw new Error("Engine returned no scene data");
+      }
+      await saveCurrent(data);
       if (showFeedback) {
         showToast(tr.editor.saveSuccess);
       }
@@ -117,6 +125,7 @@ export function EditorUI({
       if (showFeedback) {
         showToast(tr.editor.saveError);
       }
+      throw e;
     }
   };
 
@@ -227,6 +236,20 @@ export function EditorUI({
     }
   }, [confirmExit, onSave, tr]);
 
+  // Android hardware back / predictive-back gesture bypassed handleBack and left
+  // the editor without saving or confirming. Intercept it so system back and the
+  // in-app button behave identically.
+  useEffect(() => {
+    const sub = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        handleBack();
+        return true;
+      }
+    );
+    return () => sub.remove();
+  }, [handleBack]);
+
   // Drive the engine's own buttons (kept in the DOM, just hidden by our CSS) so
   // we don't reimplement editor functions outside the allowed RN-only scope.
   // We evaluate selectors in priority order and click the first matching element.
@@ -312,7 +335,7 @@ export function EditorUI({
         handleRedo();
       } else if (isCmdOrCtrl && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        onSave(true);
+        onSave(true).catch(() => {});
       } else if (isCmdOrCtrl && e.key.toLowerCase() === "e") {
         e.preventDefault();
         setExportOpen(true);
@@ -464,7 +487,9 @@ export function EditorUI({
               size={icnSz}
               btnSize={btnSz}
               variant="flat"
-              onPress={() => onSave(true)}
+              onPress={() => {
+                onSave(true).catch(() => {});
+              }}
             />
             <IconButton
               name="Share"

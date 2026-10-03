@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   Platform,
   ViewStyle,
 } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import { useProjectStore } from "./stores/ProjectStore";
 import { shareFile } from "./services/projectStorage";
@@ -85,10 +85,15 @@ export default function Library() {
     [tr],
   );
 
-  useEffect(() => {
-    list();
-    listExports();
-  }, [list, listExports]);
+  // Re-read from disk every time the screen regains focus. With expo-router the
+  // library stays mounted while the editor is open, so a plain useEffect ran
+  // only once and left stale sizes / "recent" ordering after an edit.
+  useFocusEffect(
+    useCallback(() => {
+      list();
+      listExports();
+    }, [list, listExports])
+  );
 
   const visibleProjects = useMemo(() => {
     let list2 = projects.slice();

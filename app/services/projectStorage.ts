@@ -117,21 +117,27 @@ export async function writeProjectFile(
 
   if (isWeb) {
     try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(WEB_PROJ_PREFIX + meta.id, jsonStr);
+      if (typeof localStorage === 'undefined') {
+        throw new Error('localStorage unavailable');
       }
+      localStorage.setItem(WEB_PROJ_PREFIX + meta.id, jsonStr);
       const index = getWebIndex();
       const updatedMeta: ProjectMeta = { ...meta, size: jsonStr.length };
       const filtered = index.filter((p) => p.id !== meta.id);
       setWebIndex([updatedMeta, ...filtered]);
     } catch (e) {
       console.warn('[projectStorage] writeProjectFile web error', e);
+      // Propagate: callers report the failure instead of showing a false
+      // "saved" toast while nothing reached disk.
+      throw e;
     }
     return;
   }
 
   const FS = getNativeFS();
-  if (!FS || !FS.documentDirectory) return;
+  if (!FS || !FS.documentDirectory) {
+    throw new Error('File system unavailable: cannot save project');
+  }
   const dir = `${FS.documentDirectory}projects/`;
 
   await ensureProjectsDir();
@@ -139,6 +145,7 @@ export async function writeProjectFile(
     await FS.writeAsStringAsync(dir + meta.filePath, jsonStr);
   } catch (e) {
     console.warn('[projectStorage] writeProjectFile native error', e);
+    throw e;
   }
 }
 
@@ -179,12 +186,15 @@ export async function deleteProjectFile(id: string): Promise<void> {
       setWebIndex(index);
     } catch (e) {
       console.warn('[projectStorage] deleteProjectFile web error', e);
+      throw e;
     }
     return;
   }
 
   const FS = getNativeFS();
-  if (!FS || !FS.documentDirectory) return;
+  if (!FS || !FS.documentDirectory) {
+    throw new Error('File system unavailable: cannot delete project');
+  }
   const path = `${FS.documentDirectory}projects/${id}.json`;
 
   try {
@@ -192,6 +202,7 @@ export async function deleteProjectFile(id: string): Promise<void> {
     if (info.exists) await FS.deleteAsync(path);
   } catch (e) {
     console.warn('[projectStorage] deleteProjectFile native error', e);
+    throw e;
   }
 }
 
@@ -214,7 +225,9 @@ export async function patchProjectMeta(
   patch: Partial<ProjectMeta>
 ): Promise<ProjectMeta | null> {
   const file = await readProjectFile(id);
-  if (!file) return null;
+  // Throw instead of returning null: every caller did `if (meta) {...}`, so a
+  // missing file made favourite / rename / trash appear to do nothing at all.
+  if (!file) throw new Error(`Project not found: ${id}`);
   const meta: ProjectMeta = { ...file.meta, ...patch };
   await writeProjectFile(meta, file.scene);
   return meta;
@@ -255,9 +268,15 @@ export async function importProjectFile(
     }
   }
 
+  // If the source could not be read or parsed we would otherwise create a
+  // brand-new empty project and report success, hiding a failed import.
+  if (!content) {
+    throw new Error('Could not read or parse the selected project file');
+  }
+
   const meta: ProjectMeta = {
     id,
-    name: name || content?.meta?.name || 'Importado',
+    name: name || content.meta?.name || 'Importado',
     createdAt: now,
     updatedAt: now,
     filePath: `${id}.json`,
@@ -265,7 +284,7 @@ export async function importProjectFile(
     trashed: false,
   };
 
-  await writeProjectFile(meta, content?.scene ?? null);
+  await writeProjectFile(meta, content.scene ?? null);
   return meta;
 }
 
