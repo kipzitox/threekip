@@ -148,6 +148,28 @@ async function vendorFont() {
 // Bundle the SDK (ES modules) into one classic IIFE exposing globals.
 // The entry is generated so it resolves the SDK source from REPO (independent
 // of where this script lives), avoiding the old ../../src/sdk relative path.
+// esbuild writes each module's source path as a comment in its output. Because
+// the SDK entry is generated from absolute paths, those comments embed the build
+// machine's user name and directory layout, e.g.
+//   // ../../Users/<you>/Documents/<project>/src/sdk/Events.js
+// This repo is published, so strip that prefix on every build and keep only the
+// useful repo-relative part. Without this, each rebuild reintroduces the leak.
+function scrubPersonalPaths(file) {
+  if (!fs.existsSync(file)) return;
+  const before = fs.readFileSync(file, 'utf8');
+  const after = before
+    // ../../Users/<name>/Documents/<anything>/
+    .replace(/(?:\.\.\/)+Users\/[^/\r\n]+\/Documents\/[^/\r\n]+\//g, '')
+    // C:\Users\<name>\
+    .replace(/[A-Za-z]:\\Users\\[^\\\r\n]+\\/g, '')
+    // /Users/<name>/  (macOS)
+    .replace(/\/Users\/[^/\r\n]+\//g, '');
+  if (after !== before) {
+    fs.writeFileSync(file, after, 'utf8');
+    console.log('  (scrubbed personal paths from bundle comments)');
+  }
+}
+
 async function bundleSdk() {
   console.log('• Bundling SDK (ESM -> classic IIFE) ...');
   const sdkPath = (f) => JSON.stringify(path.join(REPO, 'src', 'sdk', f));
@@ -179,6 +201,7 @@ window.__SketchbookSDKInstance = SketchbookSDKInstance;
   } finally {
     fs.unlinkSync(entry);
   }
+  scrubPersonalPaths(outfile);
   console.log(`  -> js/sdk.bundle.js`);
 }
 

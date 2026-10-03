@@ -24,13 +24,22 @@ build/
 .gradle/
 
 # Keys / signing / secrets
+# Kept broad on purpose: a real release keystore must never be committed, and
+# the old rule only matched the literal path android/app/debug.keystore, so a
+# differently named file would have been picked up silently.
 *.jks
+*.keystore
 *.p8
 *.p12
+*.pem
 *.key
 *.mobileprovision
 local.properties
-android/app/debug.keystore
+
+# Real environment files. .env.example stays tracked as the template.
+.env
+.env.*
+!.env.example
 
 # OS
 .DS_Store
