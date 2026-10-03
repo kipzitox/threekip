@@ -26,16 +26,66 @@ import { fileURLToPath } from 'url';
 import esbuild from 'esbuild';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// REPO = root of the web engine source (where index.html/js/src/styles live).
-// Override with ENGINE_REPO when mobile is not nested under the web repo.
-const REPO = process.env.ENGINE_REPO
-  ? path.resolve(process.env.ENGINE_REPO)
-  : path.resolve(__dirname, '..', '..');
+const ROOT = path.resolve(__dirname, '..');
 // OUT = where the offline bundle is written. Override with ENGINE_OUT to test
 // without touching the committed assets/engine.
 const OUT = process.env.ENGINE_OUT
   ? path.resolve(process.env.ENGINE_OUT)
-  : path.resolve(__dirname, '..', 'assets', 'engine');
+  : path.join(ROOT, 'assets', 'engine');
+
+// ---- REPO = root of the web engine source --------------------------------
+// This used to default to two directories above scripts/, which was right while
+// mobile/ lived inside the web repo but broke once the project moved: it now
+// lands on a folder with no engine in it and the copy step fails with a
+// confusing ENOENT on index.html. Instead of guessing one fixed layout, probe
+// the places the engine can realistically live and take the first one that
+// actually looks like an engine. A live source next to mobile/ wins over the
+// copy vendored inside this repo, so a rebuild does not silently use a stale
+// engine. ENGINE_REPO still wins when explicitly set.
+const ENGINE_MARKERS = ['index.html', path.join('js', 'main.js'), path.join('src', 'sdk')];
+
+function isEngineRoot(p) {
+  return ENGINE_MARKERS.every((m) => fs.existsSync(path.join(p, m)));
+}
+
+function engineRootError(detail) {
+  return new Error(
+    `Could not locate the Sketchbook engine source.\n` +
+      `  ${detail}\n` +
+      `Looked for ${ENGINE_MARKERS.join(', ')} in:\n` +
+      `    ${path.resolve(ROOT, '..')}\n` +
+      `    ${path.resolve(ROOT, '..', '..')}\n` +
+      `    ${ROOT}\n` +
+      `    ${OUT}\n` +
+      `Set ENGINE_REPO to the folder holding index.html, e.g.\n` +
+      `  ENGINE_REPO=<engine-root> npm run bundle-engine`
+  );
+}
+
+function resolveEngineRoot() {
+  if (process.env.ENGINE_REPO) {
+    const p = path.resolve(process.env.ENGINE_REPO);
+    if (!isEngineRoot(p)) {
+      throw engineRootError(`ENGINE_REPO points at a directory that is not an engine root: ${p}`);
+    }
+    return p;
+  }
+  const candidates = [
+    path.resolve(ROOT, '..'),
+    path.resolve(ROOT, '..', '..'),
+    ROOT,
+    OUT,
+  ];
+  for (const c of candidates) {
+    if (isEngineRoot(c)) return c;
+  }
+  throw engineRootError('None of the candidate locations contain an engine.');
+}
+
+const REPO = resolveEngineRoot();
+// When the engine source IS the vendored copy we must not wipe it before
+// reading: the copy step below starts with rmrf(OUT). Refresh in place instead.
+const SELF_HOSTED = path.resolve(REPO) === path.resolve(OUT);
 
 const TEXT_EXT = new Set([
   '.html', '.htm', '.css', '.js', '.mjs', '.ts', '.json', '.webmanifest', '.md',
@@ -56,6 +106,10 @@ function ensureDir(p) {
 }
 
 function copyFile(src, dest) {
+  // Self-hosted refresh copies a file onto itself. Reading then writing is fine
+  // for text, but fs.copyFileSync on an identical path can truncate the file,
+  // so bail out before that happens.
+  if (path.resolve(src) === path.resolve(dest)) return;
   ensureDir(path.dirname(dest));
   const ext = path.extname(src).toLowerCase();
   if (TEXT_EXT.has(ext)) {
@@ -154,16 +208,34 @@ async function vendorFont() {
 //   // ../../Users/<you>/Documents/<project>/src/sdk/Events.js
 // This repo is published, so strip that prefix on every build and keep only the
 // useful repo-relative part. Without this, each rebuild reintroduces the leak.
+//
+// Only comment lines are touched, never code, and the vendored-location prefix
+// is normalised too, so a rebuild from the committed copy is byte-identical to
+// what is already committed instead of churning 20-odd lines every run.
 function scrubPersonalPaths(file) {
   if (!fs.existsSync(file)) return;
   const before = fs.readFileSync(file, 'utf8');
   const after = before
-    // ../../Users/<name>/Documents/<anything>/
-    .replace(/(?:\.\.\/)+Users\/[^/\r\n]+\/Documents\/[^/\r\n]+\//g, '')
-    // C:\Users\<name>\
-    .replace(/[A-Za-z]:\\Users\\[^\\\r\n]+\\/g, '')
-    // /Users/<name>/  (macOS)
-    .replace(/\/Users\/[^/\r\n]+\//g, '');
+    .split('\n')
+    .map((line) => {
+      const m = line.match(/^(\s*\/\/\s*)(\S.*)$/);
+      if (!m) return line;
+      const cleaned = m[2]
+        // ../../Users/<name>/Documents/<anything>/
+        .replace(/(?:\.\.\/)+Users\/[^/\r\n]+\/Documents\/[^/\r\n]+\//g, '')
+        // C:/Users/<name>/Documents/<anything>/
+        .replace(/[A-Za-z]:\/Users\/[^/\r\n]+\/Documents\/[^/\r\n]+\//g, '')
+        // C:\Users\<name>\
+        .replace(/[A-Za-z]:\\Users\\[^\\\r\n]+\\/g, '')
+        // /Users/<name>/  (macOS)
+        .replace(/\/Users\/[^/\r\n]+\//g, '')
+        // Self-hosted rebuild: esbuild resolves modules relative to the generated
+        // entry in scripts/, so the vendored location ends up in front. Drop it so
+        // repeated builds produce identical output.
+        .replace(/^(?:\.\.\/)*(?:[\w.-]+\/)*assets\/engine\//, '');
+      return m[1] + cleaned;
+    })
+    .join('\n');
   if (after !== before) {
     fs.writeFileSync(file, after, 'utf8');
     console.log('  (scrubbed personal paths from bundle comments)');
@@ -268,7 +340,12 @@ function rewriteIndexScripts() {
 }
 
 // ---- main ----
-rmrf(OUT);
+if (SELF_HOSTED) {
+  console.log(`• engine source: vendored copy, refreshing in place (${OUT})`);
+} else {
+  console.log(`• engine source: ${REPO}`);
+  rmrf(OUT);
+}
 ensureDir(OUT);
 
 copyFile(path.join(REPO, 'index.html'), path.join(OUT, 'index.html'));
@@ -307,4 +384,4 @@ generateClassicMain();
 rewriteIndexScripts();
 
 console.log('\n=== bundle complete ===');
-console.log('Output:', path.relative(REPO, OUT));
+console.log('Output:', path.relative(REPO, OUT) || '.');
