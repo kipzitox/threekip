@@ -224,7 +224,7 @@ export const translations = {
       exportSection: 'Exportación',
       exportDesc: 'Los archivos exportados (PNG, GLB, OBJ, USD, USDZ, JSON) se procesan directamente en el dispositivo.',
       infoSection: 'Información',
-      infoDesc: 'ThreeKip\nVersión 1.0 (preview)\nMotor de modelado y bocetado 3D profesional.',
+      infoDesc: 'ThreeKip\nVersión 0.1.1 (alpha)\nMotor de modelado y bocetado 3D profesional.',
     },
     about: {
       title: 'ThreeKip',
@@ -454,7 +454,7 @@ export const translations = {
       exportSection: 'Exporting',
       exportDesc: 'Exported files (PNG, GLB, OBJ, USD, USDZ, JSON) are processed locally on device.',
       infoSection: 'About',
-      infoDesc: 'ThreeKip\nVersion 1.0 (preview)\nIndependent 3D modeling and sketch engine.',
+      infoDesc: 'ThreeKip\nVersion 0.1.1 (alpha)\nIndependent 3D modeling and sketch engine.',
     },
     about: {
       title: 'ThreeKip',
