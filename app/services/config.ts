@@ -1,25 +1,36 @@
-// URL of the EXISTING web dev server that serves the Sketchbook engine.
-// During FASE 5 we point the WebView at the running dev server.
-// Do NOT copy the HTML into Expo and do NOT change engine routes (later phase).
+// Where the WebView loads the Sketchbook engine from.
 //
-// For Expo Go on a physical device, the dev server runs on your computer, so the
-// WebView must reach it via your machine's LAN IP, e.g.:
-//   EXPO_PUBLIC_WEB_URL=http://192.168.1.20:8765/index.html
-// The default assumes the dev server runs on localhost:3000 or production domain.
+// In production the engine ships inside the app (see engineLoader.ts), so this
+// URL is only a fallback for Expo Go / iOS development. Point it anywhere with
+// an environment variable — no private deployment URL lives in the repo:
+//
+//   EXPO_PUBLIC_WEB_URL=http://192.168.1.20:3000
+//
+// The default is a local dev server, which is what the README documents.
 
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-let baseUrl = '';
+const DEFAULT_DEV_URL = 'http://localhost:3000';
 
-if (Platform.OS === 'web') {
-  baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-} else if (Constants.expoConfig?.hostUri) {
-  // If running in Expo Go locally, derive the host from hostUri
-  baseUrl = `http://${Constants.expoConfig.hostUri.split(':')[0]}:3000`;
-} else {
-  // Production or standalone fallback (if local assets fail)
-  baseUrl = 'http://localhost:3000';
+function resolveBaseUrl(): string {
+  const configured = process.env.EXPO_PUBLIC_WEB_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, '');
+
+  if (Platform.OS === 'web') {
+    return typeof window !== 'undefined' ? window.location.origin : '';
+  }
+
+  // Expo Go on a physical device: the dev server runs on the computer, so
+  // reach it through the LAN host that Metro reports.
+  if (Constants.expoConfig?.hostUri) {
+    return `http://${Constants.expoConfig.hostUri.split(':')[0]}:3000`;
+  }
+
+  // Production or standalone fallback (if local assets fail).
+  return DEFAULT_DEV_URL;
 }
+
+const baseUrl = resolveBaseUrl();
 
 export const WEB_APP_URL = `${baseUrl}/engine/index.html`;

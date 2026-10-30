@@ -3,7 +3,6 @@
     "name": "ThreeKip",
     "slug": "threekip",
     "version": "1.0.0",
-    
     "orientation": "default",
     "scheme": "threekip",
     "userInterfaceStyle": "automatic",

@@ -98,7 +98,7 @@ codigo QR (en `eas build --platform android`) para descargar e instalar el `.apk
 
 - `app/` — codigo React Native (UI nativa MD3, puente con el motor)
 - `assets/engine/` — fuente del motor 3D (Three.js) que se embebe en Android
-- `android/` — proyecto nativo Android (generado por Expo/prebuild; ignorado en Git)
+- `android/` — proyecto nativo Android, versionado a proposito porque incluye el motor offline en `android/app/src/main/assets/engine`
 - `scripts/` — utilidades de build (bundle del motor, copia de assets)
 - `plugins/` — plugin Expo de assets del motor
 - `eas.json` — configuracion de builds de EAS
@@ -106,11 +106,24 @@ codigo QR (en `eas build --platform android`) para descargar e instalar el `.apk
 ## Notas
 
 - El motor 3D es un asset externo embebido; no se edita como parte de la app.
-- `android/`, `ios/`, `node_modules/` y `local.properties` estan ignorados en Git
-  y se regeneran al compilar. EAS generara las carpetas nativas en la nube
-  a partir de `app.json` (no se deben versionar).
+- `ios/`, `node_modules/` y `local.properties` estan ignorados en Git y se
+  regeneran al compilar. EAS genera las carpetas nativas en la nube a partir
+  de `app.json`.
 - Solo se usa un lock file: `package-lock.json` (EAS infiere el gestor de
   paquetes de el; no subas `bun.lock` ni `yarn.lock`).
+
+## Seguridad y datos sensibles
+
+- No se versionan secretos: `.env` esta ignorado y solo se publica
+  `.env.example` como plantilla.
+- La URL del motor remoto se configura con `EXPO_PUBLIC_WEB_URL`. No hay
+  endpoints privados, IDs de proyecto ni cuentas escritos en el codigo; el
+  motor que usa la app en produccion va embebido y funciona offline.
+- Claves de firma (`*.jks`, `*.keystore`, `keystore.properties`),
+  `local.properties` y configuraciones de Google Services estan en `.gitignore`.
+- El perfil `release` firma con la keystore de debug (valor por defecto de
+  React Native). Antes de publicar un APK/AAB real, configura una keystore de
+  release privada fuera del repositorio.
 
 ## Licencia
 

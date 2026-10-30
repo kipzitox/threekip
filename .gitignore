@@ -35,6 +35,16 @@ build/
 *.key
 *.mobileprovision
 local.properties
+keystore.properties
+*.keystore.properties
+
+# Google/Firebase service configs carry project keys
+google-services.json
+GoogleService-Info.plist
+
+# IDE / profiling output
+.idea/
+*.hprof
 
 # Real environment files. .env.example stays tracked as the template.
 .env
