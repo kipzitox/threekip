@@ -1,0 +1,12 @@
+# Reglas de gitleaks compartidas por el escaneo local y el workflow de CI.
+# Se parte de las reglas por defecto y solo se excluye un falso positivo
+# comprobado; el codigo fuente real se sigue escaneando entero.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Bundle minificado de React Native (artefacto de build): la heuristica de entropia de generic-api-key marca expresiones del propio bundle, p. ej. 'c=t.key', no una credencial."
+paths = [
+  'android/app/src/main/assets/index[.]android[.]bundle',
+]
