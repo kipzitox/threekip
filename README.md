@@ -121,9 +121,10 @@ codigo QR (en `eas build --platform android`) para descargar e instalar el `.apk
   motor que usa la app en produccion va embebido y funciona offline.
 - Claves de firma (`*.jks`, `*.keystore`, `keystore.properties`),
   `local.properties` y configuraciones de Google Services estan en `.gitignore`.
-- El perfil `release` firma con la keystore de debug (valor por defecto de
-  React Native). Antes de publicar un APK/AAB real, configura una keystore de
-  release privada fuera del repositorio.
+- La firma de `release` usa una keystore privada cuando defines
+  `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y
+  `ANDROID_KEY_PASSWORD` en el entorno. Sin esas variables cae en la keystore
+  de debug (solo para pruebas locales, nunca para publicar).
 
 ## Licencia
 
