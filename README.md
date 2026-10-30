@@ -125,6 +125,20 @@ codigo QR (en `eas build --platform android`) para descargar e instalar el `.apk
   `ANDROID_KEYSTORE_PATH`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y
   `ANDROID_KEY_PASSWORD` en el entorno. Sin esas variables cae en la keystore
   de debug (solo para pruebas locales, nunca para publicar).
+- Un workflow (`.github/workflows/secret-scan.yml`) escanea toda la historia con
+  gitleaks en cada push y pull request. En local, con el binario instalado:
+
+  ```bash
+  gitleaks detect --source . --log-opts="--all" --redact --exit-code 1
+  ```
+
+  Las reglas estan en `.gitleaks.toml`: se usan las de gitleaks por defecto y
+  solo se excluye el bundle minificado `index.android.bundle`, donde la
+  heuristica de entropia marca expresiones JS que no son credenciales.
+- Si el escaneo detecta una credencial real: rotala en su proveedor, quitala del
+  codigo y reescribe la historia antes de publicar el commit. Borrar el archivo
+  en un commit nuevo no elimina el secreto del historial.
+
 
 ## Licencia
 
