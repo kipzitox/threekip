@@ -15,6 +15,7 @@ import GitMerge from "lucide-react-native/dist/esm/icons/git-merge";
 import Globe from "lucide-react-native/dist/esm/icons/globe";
 import Grid3x3 from "lucide-react-native/dist/esm/icons/grid-3x3";
 import Hand from "lucide-react-native/dist/esm/icons/hand";
+import Heart from "lucide-react-native/dist/esm/icons/heart";
 import Image from "lucide-react-native/dist/esm/icons/image";
 import Layers from "lucide-react-native/dist/esm/icons/layers";
 import LayoutGrid from "lucide-react-native/dist/esm/icons/layout-grid";
@@ -75,6 +76,7 @@ export const lucideIcons = {
   Globe,
   Grid3x3,
   Hand,
+  Heart,
   Image,
   Layers,
   LayoutGrid,

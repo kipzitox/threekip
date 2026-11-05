@@ -1340,9 +1340,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     marginTop: spacing.xs,
-    flexBasis: 140,
+    // En celulares el ancho fijo de 140/240 corta los botones; ahora crecen hasta ocupar el espacio disponible.
     flexGrow: 1,
-    maxWidth: 240,
+    // 240 px sigue siendo un techo suave, pero dejamos que flexGrow lo supere si es necesario.
+    maxWidth: 280,
   },
   actionIconWrap: {
     width: 32,

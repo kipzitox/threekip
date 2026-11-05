@@ -1,7 +1,7 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, ViewStyle, useWindowDimensions } from 'react-native';
+import { SafeAreaView, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
-import { spacing } from '../theme';
+import { useResponsive } from '../theme';
 
 export function ScreenContainer({
   children,
@@ -11,8 +11,7 @@ export function ScreenContainer({
   style?: ViewStyle;
 }) {
   const t = useTheme();
-  const { width } = useWindowDimensions();
-  const isMobile = width < 540;
+  const { gutter } = useResponsive();
 
   return (
     <SafeAreaView
@@ -20,7 +19,7 @@ export function ScreenContainer({
         styles.container,
         {
           backgroundColor: t.background,
-          padding: isMobile ? spacing.md : spacing.lg,
+          padding: gutter,
         },
         style,
       ]}

@@ -1,12 +1,18 @@
 import React from 'react';
-import { View, Text, Switch, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, Switch, ScrollView, StyleSheet, Pressable, Linking } from 'react-native';
 import { ScreenContainer } from './components/ScreenContainer';
-import { Icon, SectionTitle } from './ui/primitives';
+import { Button, Icon, SectionTitle } from './ui/primitives';
 import { useUIStore } from './stores/UIStore';
 import { useSettingsStore } from './stores/SettingsStore';
 import { useTheme } from './theme/ThemeProvider';
 import { useI18n } from './i18n';
-import { radius, spacing, typography } from './theme';
+import { contentMaxWidth, radius, spacing, typography } from './theme';
+
+/**
+ * Pagina de donaciones del autor. Vive fuera del motor 3D y de la logica de la
+ * app: solo se abre en el navegador del sistema, sin pedir datos al usuario.
+ */
+const DONATION_URL = 'https://ko-fi.com/kipzitox';
 
 function Row({
   icon,
@@ -54,6 +60,12 @@ export default function Settings() {
   const setResetCamOnOpen = useSettingsStore((s) => s.setResetCamOnOpen);
   const confirmExit = useSettingsStore((s) => s.confirmExit);
   const setConfirmExit = useSettingsStore((s) => s.setConfirmExit);
+
+  const openDonationPage = React.useCallback(() => {
+    // Si el dispositivo no puede abrir el navegador, el enlace simplemente no
+    // hace nada: no hay nada que el usuario pueda resolver desde aqui.
+    Linking.openURL(DONATION_URL).catch(() => undefined);
+  }, []);
 
   return (
     <ScreenContainer style={styles.container}>
@@ -162,6 +174,29 @@ export default function Settings() {
             </Text>
           </View>
 
+          <SectionTitle>{tr.settings.supportSection}</SectionTitle>
+          <View style={[styles.supportCard, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant }]}>
+            <View style={styles.supportHeader}>
+              <View style={[styles.rowIcon, { backgroundColor: t.secondaryContainer }]}>
+                <Icon name="Heart" size={18} color={t.onSecondaryContainer} />
+              </View>
+              <View style={styles.rowMain}>
+                <Text style={[styles.rowLabel, { color: t.text }]}>{tr.settings.supportTitle}</Text>
+                <Text style={[styles.rowHint, { color: t.textMuted }]}>{tr.settings.supportDesc}</Text>
+              </View>
+            </View>
+            <Button
+              label={tr.settings.supportCta}
+              icon="Heart"
+              variant="tonal"
+              onPress={openDonationPage}
+              style={styles.supportBtn}
+            />
+            <Text style={[styles.supportNote, { color: t.textMuted }]}>
+              {tr.settings.supportNote}
+            </Text>
+          </View>
+
           <SectionTitle>{tr.settings.infoSection}</SectionTitle>
           <View style={[styles.infoBox, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant }]}>
             <Text style={[styles.infoText, { color: t.text }]}>
@@ -179,7 +214,7 @@ const styles = StyleSheet.create({
   scrollContent: { paddingBottom: spacing.xxl + 20 },
   innerWrapper: {
     width: '100%',
-    maxWidth: 760,
+    maxWidth: contentMaxWidth.narrow,
     alignSelf: 'center',
   },
   pageHeader: {
@@ -256,6 +291,27 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     padding: spacing.md,
+  },
+  supportCard: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    padding: spacing.md,
+  },
+  supportHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  supportBtn: {
+    marginTop: spacing.md,
+    alignSelf: 'stretch',
+  },
+  supportNote: {
+    fontSize: typography.bodySmall.fontSize,
+    fontFamily: typography.bodySmall.fontFamily,
+    marginTop: spacing.sm,
+    textAlign: 'center',
+    lineHeight: 16,
   },
   infoText: {
     fontSize: typography.bodyMedium.fontSize,

@@ -19,7 +19,7 @@ import { shareFile } from "./services/projectStorage";
 import { Icon, Button, IconButton, Sheet, Chip } from "./ui/primitives";
 import { useTheme } from "./theme/ThemeProvider";
 import { useI18n } from "./i18n";
-import { radius, spacing, typography } from "./theme";
+import { contentMaxWidth, radius, spacing, typography } from "./theme";
 
 type Filter = "all" | "recent" | "favorites" | "shared" | "trash";
 type ViewMode = "grid" | "list";
@@ -169,7 +169,7 @@ export default function Library() {
   }, [width]);
 
   const cardWidth = useMemo(() => {
-    const containerWidth = Math.min(width, 1280);
+    const containerWidth = Math.min(width, contentMaxWidth.wide);
     const pad = isMobileScreen ? spacing.md : spacing.lg;
     if (numColumns === 1) return containerWidth - pad * 2;
     return Math.floor((containerWidth - pad * (numColumns + 1)) / numColumns);
@@ -305,20 +305,22 @@ export default function Library() {
             keyExtractor={(p) => p.id}
             contentContainerStyle={styles.listPad}
             renderItem={renderItem}
-          />
-        )}
-      </View>
+          />        )}
 
-      {/* New project FAB (Material Design 3 Floating Action Button) */}
-      <Pressable
-        style={[
-          styles.fab,
-          { backgroundColor: t.primaryContainer, ...shadowsFor(t) },
-        ]}
-        onPress={onNew}
-      >
-        <Icon name="add" size={32} color={t.onPrimaryContainer} strokeWidth={3} />
-      </Pressable>
+        {/* New project FAB (Material Design 3 Floating Action Button).
+            Va dentro del wrapper centrado: en una pantalla ancha el contenido
+            termina antes que la ventana y el boton quedaria despegado a la
+            derecha. */}
+        <Pressable
+          style={[
+            styles.fab,
+            { backgroundColor: t.primaryContainer, ...shadowsFor(t) },
+          ]}
+          onPress={onNew}
+        >
+          <Icon name="add" size={32} color={t.onPrimaryContainer} strokeWidth={3} />
+        </Pressable>
+      </View>
 
       {/* Options menu */}
       <Sheet
@@ -796,7 +798,7 @@ const styles = StyleSheet.create({
   mainWrapper: {
     flex: 1,
     width: "100%",
-    maxWidth: 1280,
+    maxWidth: contentMaxWidth.wide,
     alignSelf: "center",
   },
   header: {

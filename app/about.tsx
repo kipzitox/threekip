@@ -1,45 +1,86 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { ScreenContainer } from './components/ScreenContainer';
 import { Icon } from './ui/primitives';
 import { useTheme } from './theme/ThemeProvider';
 import { useI18n } from './i18n';
-import { radius, spacing, typography } from './theme';
+import { contentMaxWidth, radius, spacing, typography, useResponsive } from './theme';
 
 export default function About() {
   const t = useTheme();
   const { t: tr } = useI18n();
+  // En tablet la columna se queda centrada: una tarjeta de 1400 px de ancho
+  // deja parrafos ilegibles.
+  const { isTablet } = useResponsive();
+
   return (
     <ScreenContainer style={styles.container}>
-      <View style={[styles.headerCard, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant }]}>
-        <View style={[styles.iconWrap, { backgroundColor: t.primaryContainer }]}>
-          <Icon name="mdi-cube" size={40} color={t.onPrimaryContainer} strokeWidth={2} />
-        </View>
-        <Text style={[styles.title, { color: t.text }]}>{tr.about.title}</Text>
-        <Text style={[styles.body, { color: t.text }]}>
-          {tr.about.subtitle}
-        </Text>
-        <View style={[styles.versionBadge, { backgroundColor: t.secondaryContainer }]}>
-          <Text style={[styles.versionText, { color: t.onSecondaryContainer }]}>
-            {tr.about.version}
-          </Text>
-        </View>
-      </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.innerWrapper}>
+          <View
+            style={[
+              styles.headerCard,
+              { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant },
+            ]}
+          >
+            <View
+              style={[
+                styles.iconWrap,
+                {
+                  backgroundColor: t.primaryContainer,
+                  width: isTablet ? 88 : 72,
+                  height: isTablet ? 88 : 72,
+                },
+              ]}
+            >
+              <Icon
+                name="mdi-cube"
+                size={isTablet ? 48 : 40}
+                color={t.onPrimaryContainer}
+                strokeWidth={2}
+              />
+            </View>
+            <Text style={[styles.title, { color: t.text }]}>{tr.about.title}</Text>
+            <Text style={[styles.body, { color: t.text }]}>
+              {tr.about.subtitle}
+            </Text>
+            <View style={[styles.versionBadge, { backgroundColor: t.secondaryContainer }]}>
+              <Text style={[styles.versionText, { color: t.onSecondaryContainer }]}>
+                {tr.about.version}
+              </Text>
+            </View>
+          </View>
 
-      <View style={[styles.infoCard, { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant }]}>
-        <Text style={[styles.infoTitle, { color: t.primary }]}>
-          {tr.settings.infoSection}
-        </Text>
-        <Text style={[styles.muted, { color: t.textMuted }]}>
-          {tr.about.runtimeDesc}
-        </Text>
-      </View>
+          <View
+            style={[
+              styles.infoCard,
+              { backgroundColor: t.surfaceContainerLow, borderColor: t.outlineVariant },
+            ]}
+          >
+            <Text style={[styles.infoTitle, { color: t.primary }]}>
+              {tr.settings.infoSection}
+            </Text>
+            <Text style={[styles.muted, { color: t.textMuted }]}>
+              {tr.about.runtimeDesc}
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   container: { paddingTop: spacing.md },
+  scrollContent: { paddingBottom: spacing.xxl },
+  innerWrapper: {
+    width: '100%',
+    maxWidth: contentMaxWidth.narrow,
+    alignSelf: 'center',
+  },
   headerCard: {
     alignItems: 'center',
     borderRadius: radius.xl,
@@ -48,8 +89,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   iconWrap: {
-    width: 72,
-    height: 72,
     borderRadius: radius.xl,
     alignItems: 'center',
     justifyContent: 'center',
